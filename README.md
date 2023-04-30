@@ -1,2 +1,3 @@
-# sample_project
-Sample project to showcase my coding
+# Sample project
+- Intended to showcase my coding
+- Used as a sandbox 
