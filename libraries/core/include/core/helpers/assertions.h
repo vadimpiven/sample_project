@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#define EXPECT(x) { if (!(x)) { throw std::logic_error(#x "expectation not satisfied"); } }
+#define EXPECT(x) if (!(x)) throw std::logic_error(#x "expectation not satisfied")
 
 #define REQUIRE(x) EXPECT(x)
 
