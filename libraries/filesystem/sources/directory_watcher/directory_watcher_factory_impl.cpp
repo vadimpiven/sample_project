@@ -3,8 +3,6 @@
 #include "detail/directory_watcher_impl.h"
 
 #include <exception>
-#include <iostream>
-#include <source_location>
 
 namespace filesystem {
 
