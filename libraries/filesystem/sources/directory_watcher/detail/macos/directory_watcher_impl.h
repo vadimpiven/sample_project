@@ -19,7 +19,7 @@ public:
 
     }
 
-    ~DirectoryWatcherImpl() noexcept override
+    ~DirectoryWatcherImpl() noexcept final
     {
 
     }

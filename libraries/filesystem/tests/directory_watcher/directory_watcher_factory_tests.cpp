@@ -24,8 +24,7 @@ class DirectoryWatcherTest : public TestWithParam<int>
 public:
     [[maybe_unused]] static void SetUpTestSuite()
     {
-        GTEST_FLAG_SET(death_test_style, "threadsafe");
-        //std::setlocale(LC_CTYPE, "en_US.utf8");
+        std::setlocale(LC_CTYPE, "en_US.utf8"); // for u8 string below
     }
 
 protected:
@@ -79,7 +78,7 @@ protected:
 protected:
     static void WaitFilesystemCacheFlush()
     {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 
 private:
@@ -126,7 +125,7 @@ TEST_P(DirectoryWatcherTest, SetWatcher_CreateFile_WriteData_CloseFile)
 
     for (auto i = 0; i < n; ++i)
     {
-        std::fstream{GetUniqueFilename()} << GetTestJson();
+        std::ofstream(GetUniqueFilename()) << GetTestJson();
     }
 
     WaitFilesystemCacheFlush();
@@ -136,7 +135,7 @@ INSTANTIATE_TEST_SUITE_P(Ladder, DirectoryWatcherTest, testing::Range(0, 10));
 
 TEST_F(DirectoryWatcherTest, CreateFile_SetWatcher_WriteData_CloseFile)
 {
-    std::fstream file{GetUniqueFilename()};
+    std::ofstream file(GetUniqueFilename());
 
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);
@@ -152,7 +151,7 @@ TEST_F(DirectoryWatcherTest, CreateFile_SetWatcher_WriteData_CloseFile)
 
 TEST_F(DirectoryWatcherTest, CreateFile_WriteData_SetWatcher_CloseFile)
 {
-    std::fstream file{GetUniqueFilename()};
+    std::ofstream file(GetUniqueFilename());
     file << GetTestJson();
 
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
@@ -169,7 +168,7 @@ TEST_F(DirectoryWatcherTest, CreateFile_WriteData_SetWatcher_CloseFile)
 TEST_F(DirectoryWatcherTest, CreateFile_WriteData_CloseFile_SetWatcher)
 {
     {
-        std::fstream{GetUniqueFilename()} << GetTestJson();
+        std::ofstream(GetUniqueFilename()) << GetTestJson();
     }
 
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
