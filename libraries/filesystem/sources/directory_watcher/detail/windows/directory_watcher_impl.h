@@ -4,12 +4,12 @@
 
 #include <platform/text/text_converter.h>
 
-#include <core/helpers/assertions.h>
-
 #include <Windows.h>
 
 #include <array>
 #include <map>
+#include <stdexcept>
+#include <string>
 #include <thread>
 
 #include <filesystem_export.h>
@@ -30,8 +30,21 @@ public:
             {FSEventFilter::FileContentChanged, FILE_NOTIFY_CHANGE_LAST_WRITE},
         }.at(filter);
         const auto path = LR"(\\?\)" + platform::text::TextConverter::Utf8ToUtf16(absoluteDirectoryPath.string());
-        EXPECT(m_event = ::CreateEventW(nullptr, true, false, nullptr));
-        EXPECT(m_handle = ::FindFirstChangeNotificationW(path.c_str(), false, filterValue));
+
+        m_event = ::CreateEventW(nullptr, true, false, nullptr);
+        if (m_event == nullptr)
+        {
+            throw std::runtime_error(
+                "CreateEventW failed, system error code = " + std::to_string(::GetLastError()));
+        }
+
+        m_handle = ::FindFirstChangeNotificationW(path.c_str(), false, filterValue);
+        if (m_handle == nullptr)
+        {
+            throw std::runtime_error(
+                "FindFirstChangeNotificationW failed, system error code = " + std::to_string(::GetLastError()));
+        }
+
         std::thread(&DirectoryWatcherImpl::Loop, this).swap(m_thread);
     }
 
@@ -47,7 +60,7 @@ public:
     }
 
 private:
-    void Loop() noexcept
+    void Loop() const noexcept
     {
         const auto handles = std::array{m_event, m_handle};
         while (true)

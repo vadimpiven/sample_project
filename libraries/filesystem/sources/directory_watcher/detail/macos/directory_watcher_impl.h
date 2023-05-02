@@ -16,7 +16,8 @@ public:
     )
         : m_callback(std::move(eventOccurredCallback))
     {
-
+        /// https://developer.apple.com/documentation/coreservices/1443980-fseventstreamcreate?language=objc
+        /// https://gist.github.com/yangacer/6037073
     }
 
     ~DirectoryWatcherImpl() noexcept final
