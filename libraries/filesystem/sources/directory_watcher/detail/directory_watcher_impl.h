@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <core/helpers/platforms.h>
-
 #if defined(P_LINUX)
 #  include "linux/directory_watcher_impl.h"
 #elif defined(P_MACOS)
