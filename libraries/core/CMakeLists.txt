@@ -7,7 +7,6 @@ PUBLIC
 )
 target_sources(core
 PRIVATE
-    "${CMAKE_CURRENT_LIST_DIR}/sources/logging/logger_controller_impl.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/sources/logging/logger_impl.cpp"
 )
 
@@ -21,6 +20,5 @@ PRIVATE
 )
 target_sources(core_tests
 PRIVATE
-    "${CMAKE_CURRENT_LIST_DIR}/tests/logging/logger_controller_tests.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/tests/logging/logger_tests.cpp"
 )

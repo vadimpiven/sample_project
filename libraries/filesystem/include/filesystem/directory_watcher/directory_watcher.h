@@ -10,6 +10,4 @@ namespace filesystem {
 
 struct FILESYSTEM_EXPORT IDirectoryWatcher : core::IObject {};
 
-using ScopedDirectoryWatcher = std::unique_ptr<IDirectoryWatcher>;
-
 } // namespace filesystem

@@ -11,9 +11,15 @@ namespace core::testing {
 class CORE_EXPORT LoggerDouble final : public ILogger
 {
 public:
-    [[nodiscard]] std::ostream & Log(LoggingLevel /*level*/, std::source_location /*location*/) noexcept final
+    [[nodiscard]] LogStream Log(
+		LoggingLevel /*level*/,
+		std::thread::id /*thread*/,
+		std::string_view /*file*/,
+		int /*line*/,
+		std::string_view /*function*/
+	) noexcept final
     {
-        return m_null;
+        return {m_null, ""};
     }
 
 private:

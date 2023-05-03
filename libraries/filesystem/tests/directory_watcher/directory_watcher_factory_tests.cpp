@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include <chrono>
+#include <clocale>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -76,6 +77,11 @@ protected:
     }
 
 protected:
+	static void WaitFilesystemEpochChange()
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+
     static void WaitFilesystemCacheFlush()
     {
         std::this_thread::sleep_for(std::chrono::seconds(10));
@@ -100,7 +106,7 @@ TEST_F(DirectoryWatcherTest, CreateFileWatcher)
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateScopedDirectoryWatcher(
-            "filename", FSEventFilter::FileContentChanged, GetCallbackWithCallExpectation(0));
+		"filename", FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(0));
     ASSERT_EQ(nullptr, watcher);
 }
 
@@ -109,7 +115,7 @@ TEST_F(DirectoryWatcherTest, CreateDirectoryWatcher)
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateScopedDirectoryWatcher(
-            GetDirectory(), FSEventFilter::FileContentChanged, GetCallbackWithCallExpectation(0));
+		GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(0));
     ASSERT_NE(nullptr, watcher);
 }
 
@@ -120,11 +126,12 @@ TEST_P(DirectoryWatcherTest, SetWatcher_CreateFile_WriteData_CloseFile)
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateScopedDirectoryWatcher(
-        GetDirectory(), FSEventFilter::FileContentChanged, GetCallbackWithCallExpectation(n));
+		GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(n));
     ASSERT_NE(nullptr, watcher);
 
     for (auto i = 0; i < n; ++i)
     {
+		WaitFilesystemEpochChange();
         std::ofstream(GetUniqueFilename()) << GetTestJson();
     }
 
@@ -137,10 +144,12 @@ TEST_F(DirectoryWatcherTest, CreateFile_SetWatcher_WriteData_CloseFile)
 {
     std::ofstream file(GetUniqueFilename());
 
+	WaitFilesystemEpochChange();
+
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateScopedDirectoryWatcher(
-        GetDirectory(), FSEventFilter::FileContentChanged, GetCallbackWithCallExpectation(1));
+		GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(1));
     ASSERT_NE(nullptr, watcher);
 
     file << GetTestJson();
@@ -154,10 +163,12 @@ TEST_F(DirectoryWatcherTest, CreateFile_WriteData_SetWatcher_CloseFile)
     std::ofstream file(GetUniqueFilename());
     file << GetTestJson();
 
+	WaitFilesystemEpochChange();
+
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateScopedDirectoryWatcher(
-        GetDirectory(), FSEventFilter::FileContentChanged, GetCallbackWithCallExpectation(1));
+		GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(1));
     ASSERT_NE(nullptr, watcher);
 
     file.close();
@@ -171,10 +182,12 @@ TEST_F(DirectoryWatcherTest, CreateFile_WriteData_CloseFile_SetWatcher)
         std::ofstream(GetUniqueFilename()) << GetTestJson();
     }
 
+	WaitFilesystemEpochChange();
+
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateScopedDirectoryWatcher(
-        GetDirectory(), FSEventFilter::FileContentChanged, GetCallbackWithCallExpectation(0));
+		GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(0));
     ASSERT_NE(nullptr, watcher);
 
     WaitFilesystemCacheFlush();

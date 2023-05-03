@@ -10,7 +10,7 @@ DirectoryWatcherFactory::DirectoryWatcherFactory(std::shared_ptr<core::ILogger> 
     : LoggerProvider(std::move(logger))
 {}
 
-[[nodiscard]] ScopedDirectoryWatcher DirectoryWatcherFactory::CreateScopedDirectoryWatcher(
+[[nodiscard]] std::unique_ptr<IDirectoryWatcher> DirectoryWatcherFactory::CreateScopedDirectoryWatcher(
     const std::filesystem::path & directoryPath,
     const FSEventFilter filter,
     std::function<void()> eventOccurredCallback) noexcept
@@ -26,7 +26,7 @@ DirectoryWatcherFactory::DirectoryWatcherFactory(std::shared_ptr<core::ILogger> 
     }
     catch (const std::exception & err)
     {
-        LogError() << err.what();
+		LOG_ERR << err.what();
         return {};
     }
 }

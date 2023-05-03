@@ -15,12 +15,12 @@ namespace filesystem {
 
 enum class FSEventFilter
 {
-    FileContentChanged = 1,
+    FileAppendedAndClosed = 1,
 };
 
 struct FILESYSTEM_EXPORT IDirectoryWatcherFactory : core::IObject
 {
-    [[nodiscard]] virtual ScopedDirectoryWatcher CreateScopedDirectoryWatcher(
+    [[nodiscard]] virtual std::unique_ptr<IDirectoryWatcher> CreateScopedDirectoryWatcher(
         const std::filesystem::path & directoryPath,
         FSEventFilter filter,
         std::function<void()> eventOccurredCallback
