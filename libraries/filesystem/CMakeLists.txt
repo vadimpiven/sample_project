@@ -8,7 +8,6 @@ PUBLIC
 target_link_libraries(filesystem
 PRIVATE
     core
-    platform
 )
 target_sources(filesystem
 PRIVATE

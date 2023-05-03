@@ -2,8 +2,6 @@
 
 #include <filesystem/directory_watcher/directory_watcher.h>
 
-#include <platform/text/text_converter.h>
-
 #include <Windows.h>
 
 #include <array>
@@ -29,7 +27,7 @@ public:
         const auto filterValue = std::map<FSEventFilter, DWORD>{
             {FSEventFilter::FileContentChanged, FILE_NOTIFY_CHANGE_LAST_WRITE},
         }.at(filter);
-        const auto path = LR"(\\?\)" + platform::text::TextConverter::Utf8ToUtf16(absoluteDirectoryPath.string());
+        const auto path = LR"(\\?\)" + absoluteDirectoryPath.wstring();
 
         m_event = ::CreateEventW(nullptr, true, false, nullptr);
         if (m_event == nullptr)
