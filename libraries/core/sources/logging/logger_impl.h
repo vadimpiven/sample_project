@@ -6,7 +6,7 @@
 
 namespace core {
 
-class CORE_EXPORT Logger // final : public ILogger
+class CORE_EXPORT LoggerImpl // final : public ILoggerConfigurator
 {
 
 };

@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include <chrono>
+#include <clocale>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -76,6 +77,11 @@ protected:
     }
 
 protected:
+	static void WaitFilesystemEpochChange()
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+
     static void WaitFilesystemCacheFlush()
     {
         std::this_thread::sleep_for(std::chrono::seconds(10));
@@ -125,6 +131,7 @@ TEST_P(DirectoryWatcherTest, SetWatcher_CreateFile_WriteData_CloseFile)
 
     for (auto i = 0; i < n; ++i)
     {
+		WaitFilesystemEpochChange();
         std::ofstream(GetUniqueFilename()) << GetTestJson();
     }
 
@@ -136,6 +143,8 @@ INSTANTIATE_TEST_SUITE_P(Ladder, DirectoryWatcherTest, testing::Range(0, 10));
 TEST_F(DirectoryWatcherTest, CreateFile_SetWatcher_WriteData_CloseFile)
 {
     std::ofstream file(GetUniqueFilename());
+
+	WaitFilesystemEpochChange();
 
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);
@@ -154,6 +163,8 @@ TEST_F(DirectoryWatcherTest, CreateFile_WriteData_SetWatcher_CloseFile)
     std::ofstream file(GetUniqueFilename());
     file << GetTestJson();
 
+	WaitFilesystemEpochChange();
+
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateScopedDirectoryWatcher(
@@ -170,6 +181,8 @@ TEST_F(DirectoryWatcherTest, CreateFile_WriteData_CloseFile_SetWatcher)
     {
         std::ofstream(GetUniqueFilename()) << GetTestJson();
     }
+
+	WaitFilesystemEpochChange();
 
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);

@@ -1,3 +1,6 @@
 ﻿.idea
 .PVS-Studio
+.DS_Store
+
 build*
+cmake-build*

@@ -10,7 +10,18 @@ namespace core::testing {
 
 struct CORE_EXPORT LoggerMock : ILogger
 {
-    MOCK_METHOD((std::ostream &), Log, (LoggingLevel, std::source_location), (noexcept, override));
+    MOCK_METHOD(
+		(LogStream),
+		Log,
+		(LoggingLevel, std::thread::id, std::string_view, int, std::string_view),
+		(noexcept, override)
+	);
+};
+
+struct CORE_EXPORT LoggerConfiguratorMock : ILoggerConfigurator, LoggerMock
+{
+	MOCK_METHOD((void), SetLoggingOutput, (std::unique_ptr<std::ostream>), (override));
+	MOCK_METHOD((void), SetLoggingLevel, (LoggingLevel), (noexcept, override));
 };
 
 } // namespace core::testing

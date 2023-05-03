@@ -26,7 +26,7 @@ DirectoryWatcherFactory::DirectoryWatcherFactory(std::shared_ptr<core::ILogger> 
     }
     catch (const std::exception & err)
     {
-        LogError() << err.what();
+		LOG_ERR << err.what();
         return {};
     }
 }
