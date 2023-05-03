@@ -15,7 +15,7 @@ namespace filesystem {
 
 enum class FSEventFilter
 {
-    FileContentChanged = 1,
+    FileAppendedAndClosed = 1,
 };
 
 struct FILESYSTEM_EXPORT IDirectoryWatcherFactory : core::IObject

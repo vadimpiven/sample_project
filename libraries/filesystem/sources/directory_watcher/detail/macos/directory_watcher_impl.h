@@ -25,7 +25,7 @@ public:
         : m_callback(std::move(eventOccurredCallback))
     {
 		m_flags = std::map<FSEventFilter, std::pair<FSEventStreamEventFlags, FSEventStreamEventFlags>>{
-			{FSEventFilter::FileContentChanged,
+			{FSEventFilter::FileAppendedAndClosed,
 		 		{kFSEventStreamEventFlagItemIsFile | kFSEventStreamEventFlagItemModified, kFSEventStreamEventFlagItemRemoved}},
 		}.at(filter);
 		auto paths = std::array{

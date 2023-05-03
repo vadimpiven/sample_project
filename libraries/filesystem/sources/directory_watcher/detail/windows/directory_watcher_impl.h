@@ -25,7 +25,7 @@ public:
         : m_callback(std::move(eventOccurredCallback))
     {
         const auto filterValue = std::map<FSEventFilter, DWORD>{
-            {FSEventFilter::FileContentChanged, FILE_NOTIFY_CHANGE_LAST_WRITE},
+            {FSEventFilter::FileAppendedAndClosed, FILE_NOTIFY_CHANGE_LAST_WRITE},
         }.at(filter);
         const auto path = LR"(\\?\)" + absoluteDirectoryPath.wstring();
 
