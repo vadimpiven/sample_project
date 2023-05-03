@@ -27,7 +27,7 @@ public:
         const auto filterValue = std::map<FSEventFilter, DWORD>{
             {FSEventFilter::FileAppendedAndClosed, FILE_NOTIFY_CHANGE_LAST_WRITE},
         }.at(filter);
-        const auto path = LR"(\\?\)" + absoluteDirectoryPath.wstring();
+        const auto path = LR"(\\?\)" + absoluteDirectoryPath.wstring() + LR"(\)";
 
         m_event = ::CreateEventW(nullptr, true, false, nullptr);
         if (m_event == nullptr)
@@ -37,7 +37,7 @@ public:
         }
 
         m_handle = ::FindFirstChangeNotificationW(path.c_str(), false, filterValue);
-        if (m_handle == nullptr)
+        if (m_handle == INVALID_HANDLE_VALUE)
         {
             throw std::runtime_error(
                 "FindFirstChangeNotificationW failed, system error code = " + std::to_string(::GetLastError()));

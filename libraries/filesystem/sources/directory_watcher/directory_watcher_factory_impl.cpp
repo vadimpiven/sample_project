@@ -21,7 +21,7 @@ DirectoryWatcherFactory::DirectoryWatcherFactory(std::shared_ptr<core::ILogger> 
         {
             throw std::logic_error(directoryPath.string() + " is not a directory");
         }
-        const auto fixedPath = std::filesystem::absolute(directoryPath) / "";
+        const auto fixedPath = std::filesystem::canonical(directoryPath).make_preferred();
         return std::make_unique<DirectoryWatcherImpl>(fixedPath, filter, std::move(eventOccurredCallback));
     }
     catch (const std::exception & err)
