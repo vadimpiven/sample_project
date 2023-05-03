@@ -28,8 +28,9 @@ public:
 			{FSEventFilter::FileAppendedAndClosed,
 		 		{kFSEventStreamEventFlagItemIsFile | kFSEventStreamEventFlagItemModified, kFSEventStreamEventFlagItemRemoved}},
 		}.at(filter);
+        const auto path = absoluteDirectoryPath.string();
 		auto paths = std::array{
-			::CFStringCreateWithCString(nullptr, absoluteDirectoryPath.c_str(), kCFStringEncodingUTF8)
+			::CFStringCreateWithCString(nullptr, path.c_str(), kCFStringEncodingUTF8)
 		};
 
 		auto context = ::FSEventStreamContext{.info = this};

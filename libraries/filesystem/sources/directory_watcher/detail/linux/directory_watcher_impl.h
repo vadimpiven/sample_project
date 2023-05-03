@@ -8,6 +8,7 @@
 #include <string>
 #include <thread>
 
+#include <linux/limits.h>
 #include <sys/inotify.h>
 
 #include <filesystem_export.h>
@@ -24,10 +25,10 @@ public:
     )
         : m_callback(std::move(eventOccurredCallback))
     {
-        const auto path = absoluteDirectoryPath.c_str();
         const auto filterValue = std::map<FSEventFilter, uint32_t>{
 			{FSEventFilter::FileAppendedAndClosed, IN_CLOSE_WRITE | IN_DONT_FOLLOW | IN_EXCL_UNLINK | IN_ONLYDIR},
         }.at(filter);
+        const auto path = absoluteDirectoryPath.string();
 
         m_handle = ::inotify_init();
         if (m_handle == -1)
@@ -35,9 +36,10 @@ public:
             throw std::runtime_error("inotify_init failed, errno = " + std::to_string(errno));
         }
 
-        m_watch = ::inotify_add_watch(m_handle, path, filterValue);
+        m_watch = ::inotify_add_watch(m_handle, path.c_str(), filterValue);
         if (m_watch == -1)
         {
+            (void)::close(m_handle);
             throw std::runtime_error("inotify_add_watch failed, errno = " + std::to_string(errno));
         }
 
