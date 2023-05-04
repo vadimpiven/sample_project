@@ -1,0 +1,7 @@
+﻿if(MSVC)
+    #add_compile_definitions(__STDC_WANT_SECURE_LIB__)
+    #add_compile_options(/Wall /WX /sdl)
+    #add_link_options(/WX)
+else()
+    #add_compile_options(-Wall -Werror -Wextra -pedantic -pedantic-errors -Wabi)
+endif()

@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <core/helpers/object.h>
+#include <core/helpers/non_copiable.h>
 
 #include <iostream>
 #include <memory>
@@ -22,22 +23,22 @@ enum class LoggingLevel
 	Debug,
 };
 
-class CORE_EXPORT LogStream final : public std::ostringstream
+class CORE_EXPORT LogStream final : public std::ostringstream, public NonCopiable
 {
 public:
-	LogStream(std::ostream & out, std::string_view prefix)
-		: m_out(out.rdbuf())
+	LogStream(std::ostream & ostream, std::string_view prefix)
+		: m_ostream(ostream.rdbuf())
 	{
 		(*this) << prefix;
 	}
 
 	~LogStream() noexcept final
 	{
-		m_out << str() << std::endl;
+        m_ostream << str() << std::endl;
 	}
 
 private:
-	std::ostream m_out;
+	std::ostream m_ostream;
 };
 
 struct CORE_EXPORT ILogger : IObject
