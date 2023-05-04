@@ -20,10 +20,10 @@ enum class FSEventFilter
 
 struct FILESYSTEM_EXPORT IDirectoryWatcherFactory : core::IObject
 {
-    [[nodiscard]] virtual std::unique_ptr<IDirectoryWatcher> CreateScopedDirectoryWatcher(
-        const std::filesystem::path & directoryPath,
-        FSEventFilter filter,
-        std::function<void()> eventOccurredCallback
+    [[nodiscard]] virtual std::unique_ptr<IDirectoryWatcher> CreateDirectoryWatcher(
+            const std::filesystem::path & directoryPath,
+            const FSEventFilter filter,
+            std::function<void()> eventOccurredCallback
     ) noexcept = 0;
 };
 
