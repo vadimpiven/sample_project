@@ -11,7 +11,7 @@ namespace filesystem::testing {
 struct FILESYSTEM_EXPORT DirectoryWatcherFactoryMock : IDirectoryWatcherFactory
 {
     MOCK_METHOD(
-        (ScopedDirectoryWatcher),
+        (std::unique_ptr<IDirectoryWatcher>),
         CreateScopedDirectoryWatcher,
         (const std::filesystem::path &, FSEventFilter, std::function<void()>),
         (noexcept, override)
