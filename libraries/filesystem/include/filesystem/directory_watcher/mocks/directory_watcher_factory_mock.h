@@ -12,7 +12,7 @@ struct FILESYSTEM_EXPORT DirectoryWatcherFactoryMock : IDirectoryWatcherFactory
 {
     MOCK_METHOD(
         (std::unique_ptr<IDirectoryWatcher>),
-        CreateScopedDirectoryWatcher,
+        CreateDirectoryWatcher,
         (const std::filesystem::path &, FSEventFilter, std::function<void()>),
         (noexcept, override)
     );

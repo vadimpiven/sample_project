@@ -16,9 +16,9 @@ public:
     explicit DirectoryWatcherFactory(std::shared_ptr<core::ILogger> logger) noexcept;
 
 public:
-    [[nodiscard]] std::unique_ptr<IDirectoryWatcher> CreateScopedDirectoryWatcher(
+    [[nodiscard]] std::unique_ptr<IDirectoryWatcher> CreateDirectoryWatcher(
             const std::filesystem::path & directoryPath,
-            FSEventFilter filter,
+            const FSEventFilter filter,
             std::function<void()> eventOccurredCallback
     ) noexcept final;
 };

@@ -10,7 +10,7 @@ DirectoryWatcherFactory::DirectoryWatcherFactory(std::shared_ptr<core::ILogger> 
     : LoggerProvider(std::move(logger))
 {}
 
-[[nodiscard]] std::unique_ptr<IDirectoryWatcher> DirectoryWatcherFactory::CreateScopedDirectoryWatcher(
+[[nodiscard]] std::unique_ptr<IDirectoryWatcher> DirectoryWatcherFactory::CreateDirectoryWatcher(
     const std::filesystem::path & directoryPath,
     const FSEventFilter filter,
     std::function<void()> eventOccurredCallback) noexcept
