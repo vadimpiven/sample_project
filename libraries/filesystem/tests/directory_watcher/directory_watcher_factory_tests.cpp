@@ -106,7 +106,7 @@ TEST_F(DirectoryWatcherTest, CreateFileWatcher)
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
-            "filename", FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(0));
+        "filename", FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(0));
     ASSERT_EQ(nullptr, watcher);
 }
 
@@ -115,7 +115,7 @@ TEST_F(DirectoryWatcherTest, CreateDirectoryWatcher)
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
-            GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(0));
+        GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(0));
     ASSERT_NE(nullptr, watcher);
 }
 
@@ -126,7 +126,7 @@ TEST_P(DirectoryWatcherTest, SetWatcher_CreateFile_WriteData_CloseFile)
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
-            GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(n));
+        GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(n));
     ASSERT_NE(nullptr, watcher);
 
     for (auto i = 0; i < n; ++i)
@@ -149,7 +149,7 @@ TEST_F(DirectoryWatcherTest, CreateFile_SetWatcher_WriteData_CloseFile)
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
-            GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(1));
+        GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(1));
     ASSERT_NE(nullptr, watcher);
 
     file << GetTestJson();
@@ -168,7 +168,7 @@ TEST_F(DirectoryWatcherTest, CreateFile_WriteData_SetWatcher_CloseFile)
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
-            GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(1));
+        GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(1));
     ASSERT_NE(nullptr, watcher);
 
     file.close();
@@ -187,7 +187,7 @@ TEST_F(DirectoryWatcherTest, CreateFile_WriteData_CloseFile_SetWatcher)
     const auto factory = CreateDirectoryWatcherFactory(GetLogger());
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
-            GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(0));
+        GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(0));
     ASSERT_NE(nullptr, watcher);
 
     WaitFilesystemCacheFlush();
