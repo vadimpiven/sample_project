@@ -47,6 +47,7 @@ public:
 		::FSEventStreamSetDispatchQueue(m_handle, m_thread);
 		if (!::FSEventStreamStart(m_handle))
 		{
+            ::dispatch_release(m_thread);
 			throw std::runtime_error("FSEventStreamStart failed");
 		}
     }

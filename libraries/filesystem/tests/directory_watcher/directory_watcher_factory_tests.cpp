@@ -30,7 +30,7 @@ public:
 
 protected:
     explicit DirectoryWatcherTest()
-        : m_directory(std::filesystem::temp_directory_path() / u8"🐶{5941849b-3001-4467-8a02-b8e03ebf306f}")
+        : m_directory(std::filesystem::current_path() / u8"🐶{5941849b-3001-4467-8a02-b8e03ebf306f}")
         , m_logger(std::make_shared<LoggerDouble>())
     {
         std::filesystem::remove_all(m_directory);
@@ -40,7 +40,18 @@ protected:
 
     ~DirectoryWatcherTest() noexcept override
     {
-        std::filesystem::remove_all(m_directory);
+        std::error_code concealError;
+        std::filesystem::remove_all(m_directory, concealError);
+    }
+
+    void SetUp() override
+    {
+#ifdef SKIP_TEDIOUS_TESTS
+        GTEST_SKIP() << "DirectoryWatcherTest skipped, remove SKIP_TEDIOUS_TESTS define to enable them";
+#else
+        std::cout << "warning: DirectoryWatcherTest test suit is tedious, "
+                     "you could disable it by defining SKIP_TEDIOUS_TESTS" << std::endl;
+#endif
     }
 
 protected:

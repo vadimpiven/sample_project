@@ -39,6 +39,7 @@ public:
         m_handle = ::FindFirstChangeNotificationW(path.c_str(), false, filterValue);
         if (m_handle == INVALID_HANDLE_VALUE)
         {
+            (void)::CloseHandle(m_event);
             throw std::runtime_error(
                 "FindFirstChangeNotificationW failed, system error code = " + std::to_string(::GetLastError()));
         }
