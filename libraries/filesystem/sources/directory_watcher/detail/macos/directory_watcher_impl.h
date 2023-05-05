@@ -2,6 +2,8 @@
 
 #include <filesystem/directory_watcher/directory_watcher.h>
 
+#include <core/helpers/releasable.h>
+
 #include <array>
 #include <map>
 #include <mutex>
@@ -28,6 +30,7 @@ public:
 			{FSEventFilter::FileAppendedAndClosed,
 		 		{kFSEventStreamEventFlagItemIsFile | kFSEventStreamEventFlagItemModified, kFSEventStreamEventFlagItemRemoved}},
 		}.at(filter);
+
         const auto path = absoluteDirectoryPath.string();
 		auto paths = std::array{
 			::CFStringCreateWithCString(nullptr, path.c_str(), kCFStringEncodingUTF8)
@@ -35,18 +38,30 @@ public:
 
 		auto context = ::FSEventStreamContext{.info = this};
 		m_handle = ::FSEventStreamCreate(
-				nullptr,
-				&DirectoryWatcherImpl::Callback,
-				&context,
-				::CFArrayCreate(nullptr, reinterpret_cast<const void **>(paths.data()), paths.size(), nullptr),
-				kFSEventStreamEventIdSinceNow,
-				CFAbsoluteTime(0),
-				kFSEventStreamCreateFlagNoDefer | kFSEventStreamCreateFlagFileEvents);
+            nullptr,
+            &DirectoryWatcherImpl::Callback,
+            &context,
+            ::CFArrayCreate(nullptr, reinterpret_cast<const void **>(paths.data()), paths.size(), nullptr),
+            kFSEventStreamEventIdSinceNow,
+            CFAbsoluteTime(0),
+            kFSEventStreamCreateFlagNoDefer | kFSEventStreamCreateFlagFileEvents
+        );
+        if (m_handle == nullptr)
+        {
+            throw std::runtime_error("FSEventStreamCreate failed");
+        }
 
 		m_thread = ::dispatch_queue_create(nullptr, DISPATCH_QUEUE_CONCURRENT);
+        if (m_thread == nullptr)
+        {
+            ::FSEventStreamRelease(m_handle);
+            throw std::runtime_error("dispatch_queue_create failed");
+        }
+
 		::FSEventStreamSetDispatchQueue(m_handle, m_thread);
 		if (!::FSEventStreamStart(m_handle))
 		{
+            ::FSEventStreamInvalidate(m_handle);
             ::dispatch_release(m_thread);
 			throw std::runtime_error("FSEventStreamStart failed");
 		}
@@ -54,9 +69,9 @@ public:
 
     ~DirectoryWatcherImpl() noexcept final
     {
-		::FSEventStreamInvalidate(m_handle);
+        ::FSEventStreamInvalidate(m_handle);
 		std::scoped_lock lock{m_guard};
-		::dispatch_release(m_thread);
+        ::dispatch_release(m_thread);
     }
 
 private:
@@ -84,9 +99,9 @@ private:
 private:
     const std::function<void()> m_callback;
 	std::pair<FSEventStreamEventFlags, FSEventStreamEventFlags> m_flags;
-	FSEventStreamRef m_handle;
-	dispatch_queue_t m_thread;
-	std::mutex m_guard;
+    dispatch_queue_t m_thread;
+    std::mutex m_guard;
+    FSEventStreamRef m_handle;
 };
 
 } // namespace filesystem::detail
