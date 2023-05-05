@@ -68,7 +68,7 @@ private:
                 return;
             }
 
-            for (size_t i = 0; i < bytesRead; m_callback())
+            for (size_t i = 0; i < static_cast<size_t>(bytesRead); m_callback())
             {
                 const auto event = reinterpret_cast<struct inotify_event *>(&buffer[i]);
                 i += sizeof(struct inotify_event) + event->len;

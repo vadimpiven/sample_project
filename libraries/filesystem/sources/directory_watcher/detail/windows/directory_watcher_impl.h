@@ -64,8 +64,8 @@ private:
         const auto handles = std::array{m_event, m_handle};
         while (true)
         {
-            const auto waitResult =
-                ::WaitForMultipleObjects(handles.size(), handles.data(), false, INFINITE);
+            const auto waitResult = ::WaitForMultipleObjects(
+                static_cast<DWORD>(handles.size()), handles.data(), false, INFINITE);
             switch (waitResult)
             {
                 case WAIT_FAILED: continue;
