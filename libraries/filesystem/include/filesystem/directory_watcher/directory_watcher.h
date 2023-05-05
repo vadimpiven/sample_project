@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <core/helpers/object.h>
+#include <core/objects/object.h>
 
 #include <memory>
 

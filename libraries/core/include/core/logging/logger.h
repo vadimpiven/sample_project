@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include <core/helpers/object.h>
-#include <core/helpers/non_copiable.h>
+#include <core/objects/object.h>
+#include <core/objects/non_copiable.h>
 
 #include <iostream>
 #include <memory>

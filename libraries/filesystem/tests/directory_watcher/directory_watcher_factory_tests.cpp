@@ -79,7 +79,8 @@ protected:
 protected:
     [[nodiscard]] std::filesystem::path GetUniqueFilename()
     {
-        return m_directory / (std::stringstream{} << std::hex << std::setfill('0') << std::setw(8) << ++m_serial).str();
+        auto name = (std::stringstream{} << std::hex << std::setfill('0') << std::setw(8) << ++m_serial).str() + ".json";
+        return m_directory / std::move(name);
     }
 
     [[nodiscard]] static std::string GetTestJson()

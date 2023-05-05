@@ -2,7 +2,7 @@
 
 #include <filesystem/directory_watcher/directory_watcher.h>
 
-#include <core/helpers/releasable.h>
+#include <core/objects/releasable.h>
 
 #include <array>
 #include <map>
@@ -32,46 +32,50 @@ public:
 		}.at(filter);
 
         const auto path = absoluteDirectoryPath.string();
-		auto paths = std::array{
-			::CFStringCreateWithCString(nullptr, path.c_str(), kCFStringEncodingUTF8)
-		};
+        const auto cfPath = ::CFStringCreateWithCString(nullptr, path.c_str(), kCFStringEncodingUTF8);
+        if (cfPath == nullptr)
+        {
+            throw std::runtime_error("CFStringCreateWithCString failed");
+        }
+
+		auto paths = std::array{cfPath};
+        const auto cfPaths = ::CFArrayCreate(
+            nullptr, reinterpret_cast<const void **>(paths.data()), paths.size(), &kCFTypeArrayCallBacks);
+        if (cfPaths == nullptr)
+        {
+            throw std::runtime_error("CFArrayCreate failed");
+        }
 
 		auto context = ::FSEventStreamContext{.info = this};
-		m_handle = ::FSEventStreamCreate(
-            nullptr,
-            &DirectoryWatcherImpl::Callback,
-            &context,
-            ::CFArrayCreate(nullptr, reinterpret_cast<const void **>(paths.data()), paths.size(), nullptr),
-            kFSEventStreamEventIdSinceNow,
-            CFAbsoluteTime(0),
-            kFSEventStreamCreateFlagNoDefer | kFSEventStreamCreateFlagFileEvents
-        );
-        if (m_handle == nullptr)
-        {
-            throw std::runtime_error("FSEventStreamCreate failed");
-        }
+		m_handle = core::Releasable<FSEventStreamRef>(
+            ::FSEventStreamCreate(
+                nullptr,
+                &DirectoryWatcherImpl::Callback,
+                &context,
+                cfPaths,
+                kFSEventStreamEventIdSinceNow,
+                CFAbsoluteTime(0),
+                kFSEventStreamCreateFlagNoDefer | kFSEventStreamCreateFlagFileEvents
+            ), [](FSEventStreamRef eventStream) {
+                ::FSEventStreamSetDispatchQueue(eventStream, nullptr);
+                ::FSEventStreamRelease(eventStream);
+            });
 
-		m_thread = ::dispatch_queue_create(nullptr, DISPATCH_QUEUE_CONCURRENT);
-        if (m_thread == nullptr)
-        {
-            ::FSEventStreamRelease(m_handle);
-            throw std::runtime_error("dispatch_queue_create failed");
-        }
+		m_thread = core::Releasable<dispatch_queue_t, decltype(&::dispatch_release)>(
+            ::dispatch_queue_create(nullptr, DISPATCH_QUEUE_CONCURRENT), &::dispatch_release);
 
-		::FSEventStreamSetDispatchQueue(m_handle, m_thread);
-		if (!::FSEventStreamStart(m_handle))
+		::FSEventStreamSetDispatchQueue(*m_handle, *m_thread);
+		if (!::FSEventStreamStart(*m_handle))
 		{
-            ::FSEventStreamInvalidate(m_handle);
-            ::dispatch_release(m_thread);
 			throw std::runtime_error("FSEventStreamStart failed");
 		}
     }
 
     ~DirectoryWatcherImpl() noexcept final
     {
-        ::FSEventStreamInvalidate(m_handle);
+        m_handle.Release();
 		std::scoped_lock lock{m_guard};
-        ::dispatch_release(m_thread);
+        m_thread.Release();
     }
 
 private:
@@ -99,9 +103,9 @@ private:
 private:
     const std::function<void()> m_callback;
 	std::pair<FSEventStreamEventFlags, FSEventStreamEventFlags> m_flags;
-    dispatch_queue_t m_thread;
+    core::Releasable<dispatch_queue_t, decltype(&::dispatch_release)> m_thread;
     std::mutex m_guard;
-    FSEventStreamRef m_handle;
+    core::Releasable<FSEventStreamRef> m_handle;
 };
 
 } // namespace filesystem::detail

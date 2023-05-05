@@ -2,7 +2,7 @@
 
 #include <filesystem/directory_watcher/directory_watcher.h>
 
-#include <core/helpers/object.h>
+#include <core/objects/object.h>
 #include <core/logging/logger.h>
 
 #include <filesystem>

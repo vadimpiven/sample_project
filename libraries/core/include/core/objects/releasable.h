@@ -1,8 +1,9 @@
 #pragma once
 
-#include <core/helpers/non_copiable.h>
+#include <core/objects/non_copiable.h>
 
 #include <concepts>
+#include <functional>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -11,7 +12,7 @@
 
 namespace core {
 
-template <typename T, typename Releaser, T Invalid>
+template <typename T, typename Releaser = std::function<void(T)>, T Invalid = T()>
     requires std::destructible<T>
           && std::is_nothrow_copy_constructible_v<T>
           && std::is_nothrow_move_constructible_v<T>

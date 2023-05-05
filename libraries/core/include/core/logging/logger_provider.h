@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <core/helpers/assertions.h>
+#include <core/error_handling/assertions.h>
 #include <core/logging/logger.h>
 
 #include <sstream>
