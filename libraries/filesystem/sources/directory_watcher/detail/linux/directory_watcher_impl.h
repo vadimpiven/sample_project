@@ -2,6 +2,8 @@
 
 #include <filesystem/directory_watcher/directory_watcher.h>
 
+#include <core/objects/releasable.h>
+
 #include <cerrno>
 #include <map>
 #include <stdexcept>
@@ -30,30 +32,33 @@ public:
         }.at(filter);
         const auto path = absoluteDirectoryPath.string();
 
-        m_handle = ::inotify_init();
-        if (m_handle == -1)
+        m_handle = core::Releasable<int, decltype(&::close), -1>(::inotify_init(), &::close);
+        if (!m_handle)
         {
             throw std::runtime_error("inotify_init failed, errno = " + std::to_string(errno));
         }
 
-        m_watch = ::inotify_add_watch(m_handle, path.c_str(), filterValue);
-        if (m_watch == -1)
+        m_watch = core::Releasable<int>(
+            ::inotify_add_watch(*m_handle, path.c_str(), filterValue),
+            [this](int watch) { ::inotify_rm_watch(*m_handle, watch); },
+            -1
+        );
+        if (!m_watch)
         {
-            (void)::close(m_handle);
             throw std::runtime_error("inotify_add_watch failed, errno = " + std::to_string(errno));
         }
 
-        std::thread(&DirectoryWatcherImpl::Loop, this).swap(m_thread);
+        m_thread = std::thread(&DirectoryWatcherImpl::Loop, this);
     }
 
     ~DirectoryWatcherImpl() noexcept final
     {
-        (void)::inotify_rm_watch(m_handle, m_watch);
+        m_watch.Release();
         if (m_thread.joinable())
         {
             m_thread.join();
         }
-        (void)::close(m_handle);
+        m_handle.Release();
     }
 
 private:
@@ -62,7 +67,7 @@ private:
         std::array<uint8_t, sizeof(struct inotify_event) + NAME_MAX + 1> buffer{};
         while (true)
         {
-            auto bytesRead = ::read(m_handle, buffer.data(), buffer.size());
+            auto bytesRead = ::read(*m_handle, buffer.data(), buffer.size());
             if (bytesRead == -1)
             {
                 return;
@@ -82,9 +87,9 @@ private:
 
 private:
     const std::function<void()> m_callback;
-    int m_handle;
-    int m_watch;
+    core::Releasable<int, decltype(&::close), -1> m_handle;
     std::thread m_thread;
+    core::Releasable<int> m_watch;
 };
 
 } // namespace filesystem::detail
