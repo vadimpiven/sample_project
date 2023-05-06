@@ -12,6 +12,7 @@
 
 namespace core {
 
+/// Use std::unique_ptr with custom deleter instead whenever possible
 template <typename T, typename Releaser = std::function<void(T)>, T Invalid = T()>
     requires std::destructible<T>
           && std::is_nothrow_copy_constructible_v<T>
@@ -29,12 +30,7 @@ public:
     Releasable(T && value, Releaser && close)
         : m_value(std::move(value))
         , m_release(std::move(close))
-    {
-        if (m_value == Invalid)
-        {
-            throw std::runtime_error(__func__ + std::string(" constructed from Invalid value"));
-        }
-    }
+    {}
 
     constexpr Releasable(Releasable && other) noexcept
         : m_value(std::move(other.m_value))

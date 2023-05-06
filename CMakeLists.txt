@@ -13,5 +13,6 @@ include(ExportHeader)
 include(StrictCompilerChecks)
 include(PlatformDefinition)
 include(GTest)
+include(CTest)
 
 add_subdirectory(libraries)
