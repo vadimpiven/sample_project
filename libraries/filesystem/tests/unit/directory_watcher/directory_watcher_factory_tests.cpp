@@ -30,7 +30,7 @@ public:
 
 protected:
     explicit DirectoryWatcherTest()
-        : m_directory(std::filesystem::current_path() / u8"🐶{5941849b-3001-4467-8a02-b8e03ebf306f}")
+        : m_directory(std::filesystem::temp_directory_path() / u8"🐶{5941849b-3001-4467-8a02-b8e03ebf306f}")
         , m_logger(std::make_shared<LoggerDouble>())
     {
         std::filesystem::remove_all(m_directory);
@@ -91,7 +91,7 @@ protected:
 protected:
 	static void WaitFilesystemEpochChange()
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(15));
 	}
 
     static void WaitFilesystemCacheFlush()
