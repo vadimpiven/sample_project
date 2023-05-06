@@ -8,11 +8,12 @@ project(some_project
 )
 set(CMAKE_CXX_STANDARD 20)
 
-include(CTest)
-if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
-    cmake_policy(SET CMP0135 NEW) # Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
+if(POLICY CMP0135)
+    cmake_policy(SET CMP0135 NEW)
 endif()
+
 include(FetchContent)
+include(CTest)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 include(ExportHeader)

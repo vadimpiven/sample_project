@@ -1,4 +1,6 @@
-﻿macro(enable_strict_compiler_checks)
+﻿set(CMAKE_CXX_EXTENSIONS OFF)
+
+macro(enable_strict_compiler_checks)
     if(MSVC)
         add_compile_definitions(__STDC_WANT_SECURE_LIB__)
         add_compile_options(/sdl /W4 /WX)
