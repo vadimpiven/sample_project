@@ -30,16 +30,6 @@ private:
 
 } // namespace core
 
-enum class LoggingLevel
-{
-	Fatal = 0,
-	Error,
-	Warning,
-	Important,
-	Info,
-	Debug,
-};
-
 #define LOG(level) GetLogger()->Log((level), std::this_thread::get_id(), __FILE__, __LINE__, __func__)
 
 #define LOG_FTL LOG(::core::LoggingLevel::Fatal)
