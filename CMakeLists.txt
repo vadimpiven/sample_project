@@ -8,9 +8,19 @@ project(some_project
 )
 set(CMAKE_CXX_STANDARD 20)
 
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/cmake/")
+if(POLICY CMP0135)
+    cmake_policy(SET CMP0135 NEW)
+endif()
+
+include(FetchContent)
+include(CTest)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 include(ExportHeader)
 include(PlatformDefinition)
+include(StrictCompilerChecks)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/3rdparty")
 include(GTest)
 
 add_subdirectory(libraries)

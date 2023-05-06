@@ -20,16 +20,4 @@ if(APPLE)
     )
 endif()
 
-add_executable(filesystem_tests)
-gtest_discover_tests(filesystem_tests)
-target_link_libraries(filesystem_tests
-PRIVATE
-    GTest::gmock_main
-PRIVATE
-    core
-    filesystem
-)
-target_sources(filesystem_tests
-PRIVATE
-    "${CMAKE_CURRENT_LIST_DIR}/tests/directory_watcher/directory_watcher_factory_tests.cpp"
-)
+add_subdirectory(tests)

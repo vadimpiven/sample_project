@@ -2,13 +2,15 @@
 
 #include <filesystem/directory_watcher/directory_watcher.h>
 
-#include <Windows.h>
+#include <core/objects/releasable.h>
 
 #include <array>
 #include <map>
 #include <stdexcept>
 #include <string>
 #include <thread>
+
+#include <Windows.h>
 
 #include <filesystem_export.h>
 
@@ -29,49 +31,54 @@ public:
         }.at(filter);
         const auto path = LR"(\\?\)" + absoluteDirectoryPath.wstring() + LR"(\)";
 
-        m_event = ::CreateEventW(nullptr, true, false, nullptr);
-        if (m_event == nullptr)
+        m_event = core::Releasable<HANDLE, decltype(&::CloseHandle)>(
+            ::CreateEventW(nullptr, true, false, nullptr), &::CloseHandle);
+        if (!m_event)
         {
             throw std::runtime_error(
                 "CreateEventW failed, system error code = " + std::to_string(::GetLastError()));
         }
 
-        m_handle = ::FindFirstChangeNotificationW(path.c_str(), false, filterValue);
-        if (m_handle == INVALID_HANDLE_VALUE)
+        m_handle = core::Releasable<HANDLE, decltype(&::FindCloseChangeNotification)>(
+            ::FindFirstChangeNotificationW(path.c_str(), false, filterValue),
+            &::FindCloseChangeNotification,
+            INVALID_HANDLE_VALUE
+        );
+        if (!m_handle)
         {
             throw std::runtime_error(
                 "FindFirstChangeNotificationW failed, system error code = " + std::to_string(::GetLastError()));
         }
 
-        std::thread(&DirectoryWatcherImpl::Loop, this).swap(m_thread);
+        m_thread = std::thread(&DirectoryWatcherImpl::Loop, this);
     }
 
     ~DirectoryWatcherImpl() noexcept final
     {
-        (void)::SetEvent(m_event);
+        (void)::SetEvent(*m_event);
         if (m_thread.joinable())
         {
             m_thread.join();
         }
-        (void)::FindCloseChangeNotification(m_handle);
-        (void)::CloseHandle(m_event);
+        m_handle.Release();
+        m_event.Release();
     }
 
 private:
     void Loop() const noexcept
     {
-        const auto handles = std::array{m_event, m_handle};
+        const auto handles = std::array{*m_event, *m_handle};
         while (true)
         {
-            const auto waitResult =
-                ::WaitForMultipleObjects(handles.size(), handles.data(), false, INFINITE);
+            const auto waitResult = ::WaitForMultipleObjects(
+                static_cast<DWORD>(handles.size()), handles.data(), false, INFINITE);
             switch (waitResult)
             {
                 case WAIT_FAILED: continue;
                 case WAIT_OBJECT_0: return;
                 default: m_callback();
             }
-            if (!::FindNextChangeNotification(m_handle))
+            if (!::FindNextChangeNotification(*m_handle))
             {
                 return;
             }
@@ -80,8 +87,8 @@ private:
 
 private:
     const std::function<void()> m_callback;
-    HANDLE m_handle;
-    HANDLE m_event;
+    core::Releasable<HANDLE, decltype(&::CloseHandle)> m_event;
+    core::Releasable<HANDLE, decltype(&::FindCloseChangeNotification)> m_handle;
     std::thread m_thread;
 };
 

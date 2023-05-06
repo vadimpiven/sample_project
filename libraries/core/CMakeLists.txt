@@ -10,15 +10,4 @@ PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/sources/logging/logger_impl.cpp"
 )
 
-add_executable(core_tests)
-gtest_discover_tests(core_tests)
-target_link_libraries(core_tests
-PRIVATE
-    GTest::gmock_main
-PRIVATE
-    core
-)
-target_sources(core_tests
-PRIVATE
-    "${CMAKE_CURRENT_LIST_DIR}/tests/logging/logger_tests.cpp"
-)
+add_subdirectory(tests)

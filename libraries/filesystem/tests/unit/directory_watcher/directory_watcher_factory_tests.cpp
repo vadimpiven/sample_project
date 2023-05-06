@@ -40,7 +40,18 @@ protected:
 
     ~DirectoryWatcherTest() noexcept override
     {
-        std::filesystem::remove_all(m_directory);
+        std::error_code concealError;
+        std::filesystem::remove_all(m_directory, concealError);
+    }
+
+    void SetUp() override
+    {
+#ifdef SKIP_TEDIOUS_TESTS
+        GTEST_SKIP() << "DirectoryWatcherTest skipped, remove SKIP_TEDIOUS_TESTS define to enable them";
+#else
+        std::cout << "warning: DirectoryWatcherTest test suit is tedious, "
+                     "you could disable it by defining SKIP_TEDIOUS_TESTS" << std::endl;
+#endif
     }
 
 protected:
@@ -68,7 +79,8 @@ protected:
 protected:
     [[nodiscard]] std::filesystem::path GetUniqueFilename()
     {
-        return m_directory / (std::stringstream{} << std::hex << std::setfill('0') << std::setw(8) << ++m_serial).str();
+        auto name = (std::stringstream{} << std::hex << std::setfill('0') << std::setw(8) << ++m_serial).str() + ".json";
+        return m_directory / std::move(name);
     }
 
     [[nodiscard]] static std::string GetTestJson()
@@ -79,7 +91,7 @@ protected:
 protected:
 	static void WaitFilesystemEpochChange()
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(15));
 	}
 
     static void WaitFilesystemCacheFlush()
