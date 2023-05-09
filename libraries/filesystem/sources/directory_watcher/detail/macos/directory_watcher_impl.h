@@ -34,7 +34,7 @@ public:
 
         const auto path = absoluteDirectoryPath.string();
         const auto cfPath = core::Releasable<CFStringRef, decltype(&::CFRelease)>(
-            ::CFStringCreateWithCString(kCFAllocatorDefault, path.c_str(), kCFStringEncodingUTF8), &::CFRelease);
+            ::CFStringCreateWithCString(kCFAllocatorDefault, path.c_str(), kCFStringEncodingUTF8), nullptr, &::CFRelease);
         if (!cfPath)
         {
             throw std::runtime_error("CFStringCreateWithCString failed");
@@ -47,7 +47,7 @@ public:
                 reinterpret_cast<const void **>(paths.data()),
                 paths.size(),
                 &kCFTypeArrayCallBacks
-            ), &::CFRelease);
+            ), nullptr, &::CFRelease);
         if (!cfPaths)
         {
             throw std::runtime_error("CFArrayCreate failed");
@@ -63,7 +63,9 @@ public:
                 kFSEventStreamEventIdSinceNow,
                 CFAbsoluteTime(0),
                 kFSEventStreamCreateFlagNoDefer | kFSEventStreamCreateFlagFileEvents
-            ), [](FSEventStreamRef eventStream) {
+            ),
+            nullptr,
+            [](FSEventStreamRef eventStream) {
                 ::FSEventStreamSetDispatchQueue(eventStream, nullptr);
                 ::FSEventStreamRelease(eventStream);
             });
@@ -73,7 +75,7 @@ public:
         }
 
 		m_thread = core::Releasable<dispatch_queue_t, decltype(&::dispatch_release)>(
-            ::dispatch_queue_create(nullptr, DISPATCH_QUEUE_CONCURRENT), &::dispatch_release);
+            ::dispatch_queue_create(nullptr, DISPATCH_QUEUE_CONCURRENT), nullptr, &::dispatch_release);
         if (!m_thread)
         {
             throw std::runtime_error("dispatch_queue_create failed");
