@@ -1,5 +1,5 @@
 add_executable(filesystem_memory_tests)
-ctest_sanitize_executable(filesystem_memory_tests)
+add_asan_test(NAME filesystem_memory_tests COMMAND filesystem_memory_tests)
 target_link_libraries(filesystem_memory_tests
 PRIVATE
     core

@@ -1,5 +1,5 @@
 add_executable(filesystem_unit_tests)
-gtest_discover_tests(filesystem_unit_tests)
+add_test(NAME filesystem_unit_tests COMMAND filesystem_unit_tests)
 target_link_libraries(filesystem_unit_tests
 PRIVATE
     GTest::gmock_main
