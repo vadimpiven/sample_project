@@ -1,11 +1,11 @@
 name: ci
 run-name: Continuous integration build and test run
 
-on: [push, pull_request, workflow_dispatch]
+on: [push, workflow_dispatch]
 
 jobs:
   job:
-    name: ${{ matrix.os }}-${{ github.workflow }}
+    name: ${{ matrix.triplet }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -18,6 +18,9 @@ jobs:
             triplet: x64-linux
           - os: macos-latest
             triplet: x64-osx
+    concurrency:
+      group: ${{ matrix.triplet }}-${{ github.ref }}
+      cancel-in-progress: true
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
     steps:
@@ -25,17 +28,17 @@ jobs:
         with:
           submodules: true
       - uses: lukka/get-cmake@latest
-      - name: dir
+      - name: List workspace contents
         run: find $RUNNER_WORKSPACE
         shell: bash
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@main
         id: runvcpkg
-      - name: List $RUNNER_WORKSPACE before build
+      - name: vcpkg run outputs
+        run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_DEFAULT_TRIPLET_OUT }}' "
+      - name: List workspace contents
         run: find $RUNNER_WORKSPACE
         shell: bash
-      - name: Prints output of run-vcpkg's action.
-        run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_DEFAULT_TRIPLET_OUT }}' "
       - name: Cmake configure and build
         uses: lukka/run-cmake@v10
         id: runcmake
@@ -43,6 +46,6 @@ jobs:
           configurePreset: 'ninja-multi-vcpkg'
           buildPreset: 'default'
           testPreset: 'default'
-      - name: List $RUNNER_WORKSPACE after build
+      - name: List workspace contents
         run: find $RUNNER_WORKSPACE
         shell: bash
