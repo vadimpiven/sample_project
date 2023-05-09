@@ -17,6 +17,6 @@ include(ExportHeader)
 include(PlatformDefinition)
 include(StrictCompilerChecks)
 
-find_package(gtest CONFIG REQUIRED)
+find_package(GTest CONFIG REQUIRED)
 
 add_subdirectory(libraries)

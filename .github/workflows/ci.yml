@@ -1,12 +1,7 @@
 name: ci
 run-name: Continuous integration build and test run
 
-on:
-  push:
-    branches: [ $default-branch ]
-  pull_request:
-    branches: [ $default-branch ]
-  workflow_dispatch:
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   job:
@@ -41,12 +36,13 @@ jobs:
         shell: bash
       - name: Prints output of run-vcpkg's action.
         run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_DEFAULT_TRIPLET_OUT }}' "
-      - name: Run CMake+vcpkg+NinjaMulti-Config (Release configuration)
+      - name: Cmake configure and build
         uses: lukka/run-cmake@v10
         id: runcmake
         with:
           configurePreset: 'ninja-multi-vcpkg'
           buildPreset: 'default'
+          testPreset: 'default'
       - name: List $RUNNER_WORKSPACE after build
         run: find $RUNNER_WORKSPACE
         shell: bash

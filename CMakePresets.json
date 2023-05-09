@@ -27,5 +27,12 @@
       "configurePreset": "ninja-multi-vcpkg",
       "configuration": "RelWithDebInfo"
     }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "configurePreset": "ninja-multi-vcpkg",
+      "configuration": "RelWithDebInfo"
+    }
   ]
 }
