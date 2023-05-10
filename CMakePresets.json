@@ -27,7 +27,8 @@
       "generator": "Visual Studio 17 2022",
       "binaryDir": "${sourceDir}/build/windows",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ASAN": "ON"
       },
       "vendor": {
         "jetbrains.com/clion": {
@@ -41,7 +42,8 @@
       "generator": "Ninja Multi-Config",
       "binaryDir": "${sourceDir}/build/linux",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ASAN": "ON"
       },
       "vendor": {
         "jetbrains.com/clion": {
@@ -55,7 +57,8 @@
       "generator": "Ninja Multi-Config",
       "binaryDir": "${sourceDir}/build/macos",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ASAN": "ON"
       },
       "vendor": {
         "jetbrains.com/clion": {
