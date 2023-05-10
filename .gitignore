@@ -1,6 +1,6 @@
-﻿.idea
-.PVS-Studio
+﻿/.idea
+/.PVS-Studio
 .DS_Store
 
 /*build*
-/vcpkg
+CMakeUserPresets.json

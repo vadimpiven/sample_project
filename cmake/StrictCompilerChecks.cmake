@@ -10,6 +10,7 @@ macro(enable_strict_compiler_checks)
     endif()
 endmacro()
 
+option(ASAN "Address sanitizing" OFF)
 if(ASAN)
     message("-- Address sanitizing: enabled")
     if(MSVC)
