@@ -5,6 +5,7 @@
 #include <concepts>
 #include <functional>
 #include <optional>
+#include <type_traits>
 #include <utility>
 
 #include <core_export.h>
@@ -14,23 +15,23 @@ namespace core {
 /// Use std::unique_ptr with custom deleter instead whenever possible
 template <typename T, typename Releaser = std::function<void(T)>>
     requires std::destructible<T>
-          && std::is_nothrow_copy_constructible_v<T>
           && std::is_nothrow_move_constructible_v<T>
-          && std::equality_comparable<T>
           && std::invocable<Releaser, T>
 class CORE_EXPORT Releasable : public NonCopiable
 {
 public:
     constexpr Releasable() = default;
 
-    Releasable(T && value, T && invalid, Releaser && release)
-        : m_value(std::move(value))
+    template <typename I = T>
+        requires std::equality_comparable_with<T, I>
+    Releasable(T && value, I && invalid, Releaser && release)
+        : m_value(std::nullopt)
         , m_release(std::move(release))
     {
-        if (m_value.value() == invalid)
+        if (!(value == invalid))
         {
-            [[unlikely]]
-            m_value.reset();
+            [[likely]]
+            m_value = std::move(value);
         }
     }
 
@@ -49,6 +50,22 @@ public:
 
         std::swap(m_value, other.m_value);
         std::swap(m_release, other.m_release);
+        return *this;
+    }
+
+    template<typename T1, typename Function>
+        requires std::destructible<T1>
+                 && std::is_nothrow_move_constructible_v<T1>
+                 && std::invocable<Function, T1>
+    friend class Releasable;
+
+    template<typename T1 = T, typename Releaser1 = Releaser, typename Function>
+        requires std::same_as<Releaser1, std::function<void(T1)>>
+              && std::is_constructible_v<std::function<void(T1)>, Function>
+    Releasable & operator=(Releasable<T1, Function> && other)
+    {
+        std::swap(m_value, other.m_value);
+        m_release = std::function<void(T)>(other.m_release);
         return *this;
     }
 
@@ -85,5 +102,8 @@ private:
     std::optional<T> m_value;
     Releaser m_release;
 };
+
+template <typename T, typename I, typename Releaser>
+Releasable(T && /*value*/, I && /*invalid*/, Releaser && /*release*/) -> Releasable<T, Releaser>;
 
 } // namespace core

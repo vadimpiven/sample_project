@@ -31,7 +31,7 @@ public:
         }.at(filter);
         const auto path = LR"(\\?\)" + absoluteDirectoryPath.wstring() + LR"(\)";
 
-        m_event = core::Releasable<HANDLE, decltype(&::CloseHandle)>(
+        m_event = core::Releasable(
             ::CreateEventW(nullptr, true, false, nullptr), nullptr, &::CloseHandle);
         if (!m_event)
         {
@@ -39,7 +39,7 @@ public:
                 "CreateEventW failed, system error code = " + std::to_string(::GetLastError()));
         }
 
-        m_handle = core::Releasable<HANDLE, decltype(&::FindCloseChangeNotification)>(
+        m_handle = core::Releasable(
             ::FindFirstChangeNotificationW(path.c_str(), false, filterValue),
             INVALID_HANDLE_VALUE,
             &::FindCloseChangeNotification
