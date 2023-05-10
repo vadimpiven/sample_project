@@ -13,18 +13,19 @@
 namespace core {
 
 /// Use std::unique_ptr with custom deleter instead whenever possible
-template <typename T, typename Releaser = std::function<void(T)>>
-    requires std::destructible<T>
-          && std::is_nothrow_move_constructible_v<T>
-          && std::invocable<Releaser, T>
+/// Warning: any exception thrown by Releaser would be consumed
+template <typename Type, typename Releaser = std::function<void(Type)>>
+    requires std::destructible<Type>
+          && std::is_nothrow_move_constructible_v<Type>
+          && std::invocable<Releaser, Type>
 class CORE_EXPORT Releasable : public NonCopiable
 {
 public:
     constexpr Releasable() = default;
 
-    template <typename I = T>
-        requires std::equality_comparable_with<T, I>
-    Releasable(T && value, I && invalid, Releaser && release)
+    template <typename Invalid = Type>
+        requires std::equality_comparable_with<Type, Invalid>
+    Releasable(Type && value, Invalid && invalid, Releaser && release)
         : m_value(std::nullopt)
         , m_release(std::move(release))
     {
@@ -53,19 +54,19 @@ public:
         return *this;
     }
 
-    template<typename T1, typename Function>
-        requires std::destructible<T1>
-                 && std::is_nothrow_move_constructible_v<T1>
-                 && std::invocable<Function, T1>
+    template<typename OtherType, typename OtherReleaser>
+        requires std::destructible<OtherType>
+                 && std::is_nothrow_move_constructible_v<OtherType>
+                 && std::invocable<OtherReleaser, OtherType>
     friend class Releasable;
 
-    template<typename T1 = T, typename Releaser1 = Releaser, typename Function>
-        requires std::same_as<Releaser1, std::function<void(T1)>>
-              && std::is_constructible_v<std::function<void(T1)>, Function>
-    Releasable & operator=(Releasable<T1, Function> && other)
+    template<typename SameType = Type, typename SameReleaser = Releaser, typename OtherReleaser>
+        requires std::same_as<SameReleaser, std::function<void(SameType)>>
+              && std::is_constructible_v<std::function<void(SameType)>, OtherReleaser>
+    Releasable & operator=(Releasable<SameType, OtherReleaser> && other)
     {
         std::swap(m_value, other.m_value);
-        m_release = std::function<void(T)>(other.m_release);
+        m_release = std::function<void(Type)>(other.m_release);
         return *this;
     }
 
@@ -74,7 +75,7 @@ public:
         return !m_value.has_value();
     }
 
-    [[nodiscard]] T operator *() const
+    [[nodiscard]] Type operator *() const
     {
         return m_value.value();
     }
@@ -99,11 +100,11 @@ public:
     }
 
 private:
-    std::optional<T> m_value;
+    std::optional<Type> m_value;
     Releaser m_release;
 };
 
-template <typename T, typename I, typename Releaser>
-Releasable(T && /*value*/, I && /*invalid*/, Releaser && /*release*/) -> Releasable<T, Releaser>;
+template <typename Type, typename Invalid, typename Releaser>
+Releasable(Type && /*value*/, Invalid && /*invalid*/, Releaser && /*release*/) -> Releasable<Type, Releaser>;
 
 } // namespace core
