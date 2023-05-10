@@ -14,10 +14,56 @@
         "CMAKE_TOOLCHAIN_FILE": {
           "type": "FILEPATH",
           "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-        }
+        },
+        "CMAKE_CONFIGURATION_TYPES": "RelWithDebInfo"
       },
       "environment": {
         "VCPKG_ROOT": "./vcpkg"
+      }
+    },
+    {
+      "name": "windows-x64",
+      "inherits": ["ninja-multi-vcpkg"],
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/windows/x64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      },
+      "vendor": {
+        "jetbrains.com/clion": {
+          "toolchain": "MSVC x64"
+        }
+      }
+    },
+    {
+      "name": "linux-x64",
+      "inherits": ["ninja-multi-vcpkg"],
+      "generator": "Ninja Multi-Config",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/linux/x64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      },
+      "vendor": {
+        "jetbrains.com/clion": {
+          "toolchain": "WSL2"
+        }
+      }
+    },
+    {
+      "name": "macos-arm64",
+      "inherits": ["ninja-multi-vcpkg"],
+      "generator": "Ninja Multi-Config",
+      "architecture": "arm64",
+      "binaryDir": "${sourceDir}/build/macos/arm64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      },
+      "vendor": {
+        "jetbrains.com/clion": {
+          "toolchain": "Apple Clang"
+        }
       }
     }
   ],
