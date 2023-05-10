@@ -33,7 +33,7 @@ public:
 		}.at(filter);
 
         const auto path = absoluteDirectoryPath.string();
-        const auto cfPath = core::Releasable<CFStringRef, decltype(&::CFRelease)>(
+        const auto cfPath = core::Releasable(
             ::CFStringCreateWithCString(kCFAllocatorDefault, path.c_str(), kCFStringEncodingUTF8), nullptr, &::CFRelease);
         if (!cfPath)
         {
@@ -41,7 +41,7 @@ public:
         }
 
 		auto paths = std::array{*cfPath};
-        const auto cfPaths = core::Releasable<CFArrayRef, decltype(&::CFRelease)>(
+        const auto cfPaths = core::Releasable(
             ::CFArrayCreate(
                 kCFAllocatorDefault,
                 reinterpret_cast<const void **>(paths.data()),
@@ -53,8 +53,8 @@ public:
             throw std::runtime_error("CFArrayCreate failed");
         }
 
-		auto context = ::FSEventStreamContext{.info = this};
-		m_handle = core::Releasable<FSEventStreamRef>(
+        auto context = ::FSEventStreamContext{.info = this};
+        m_handle = core::Releasable(
             ::FSEventStreamCreate(
                 kCFAllocatorDefault,
                 &DirectoryWatcherImpl::Callback,
@@ -74,7 +74,7 @@ public:
             throw std::runtime_error("FSEventStreamCreate failed");
         }
 
-		m_thread = core::Releasable<dispatch_queue_t, decltype(&::dispatch_release)>(
+		m_thread = core::Releasable(
             ::dispatch_queue_create(nullptr, DISPATCH_QUEUE_CONCURRENT), nullptr, &::dispatch_release);
         if (!m_thread)
         {

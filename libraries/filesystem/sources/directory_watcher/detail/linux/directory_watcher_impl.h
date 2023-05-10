@@ -32,13 +32,13 @@ public:
         }.at(filter);
         const auto path = absoluteDirectoryPath.string();
 
-        m_handle = core::Releasable<int, decltype(&::close)>(::inotify_init(), -1, &::close);
+        m_handle = core::Releasable(::inotify_init(), -1, &::close);
         if (!m_handle)
         {
             throw std::runtime_error("inotify_init failed, errno = " + std::to_string(errno));
         }
 
-        m_watch = core::Releasable<int>(
+        m_watch = core::Releasable(
             ::inotify_add_watch(*m_handle, path.c_str(), filterValue),
             -1,
             [this](int watch) { ::inotify_rm_watch(*m_handle, watch); }
