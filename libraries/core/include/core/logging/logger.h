@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// SPDX-License-Identifier: MIT
+
+#pragma once
 
 #include <core/objects/object.h>
 #include <core/objects/non_copiable.h>

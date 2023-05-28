@@ -1,4 +1,6 @@
-﻿add_library(filesystem STATIC)
+﻿# SPDX-License-Identifier: MIT
+
+add_library(filesystem STATIC)
 generate_export_header(filesystem)
 target_include_directories(core
 PUBLIC

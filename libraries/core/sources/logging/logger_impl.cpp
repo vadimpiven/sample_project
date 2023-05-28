@@ -1,4 +1,6 @@
-﻿#include "logger_impl.h"
+﻿// SPDX-License-Identifier: MIT
+
+#include "logger_impl.h"
 
 namespace core {
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #include <filesystem/directory_watcher/directory_watcher_factory.h>
 
 #include <core/error_handling/assertions.h>

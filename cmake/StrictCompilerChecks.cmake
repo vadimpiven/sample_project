@@ -1,4 +1,6 @@
-﻿set(CMAKE_CXX_EXTENSIONS OFF)
+﻿# SPDX-License-Identifier: MIT
+
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 macro(enable_strict_compiler_checks)
     if(MSVC)

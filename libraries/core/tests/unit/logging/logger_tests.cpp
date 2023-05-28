@@ -1,4 +1,6 @@
-﻿#include <core/logging/logger.h>
+﻿// SPDX-License-Identifier: MIT
+
+#include <core/logging/logger.h>
 
 #include <gtest/gtest.h>
 

@@ -1,4 +1,6 @@
-﻿#include "directory_watcher_factory_impl.h"
+﻿// SPDX-License-Identifier: MIT
+
+#include "directory_watcher_factory_impl.h"
 
 #include "detail/directory_watcher_impl.h"
 
