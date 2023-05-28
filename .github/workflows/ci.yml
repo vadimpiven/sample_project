@@ -1,3 +1,5 @@
+#  SPDX-License-Identifier: MIT
+
 name: ci
 run-name: Continuous integration build and test run
 

@@ -18,6 +18,7 @@
         "CMAKE_CONFIGURATION_TYPES": "RelWithDebInfo"
       },
       "environment": {
+        "VCPKG_DISABLE_METRICS": "TRUE",
         "VCPKG_ROOT": "./vcpkg"
       }
     },

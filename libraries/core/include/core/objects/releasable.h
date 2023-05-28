@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <core/objects/non_copiable.h>

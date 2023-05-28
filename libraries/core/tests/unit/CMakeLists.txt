@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 add_executable(core_unit_tests)
 add_test(NAME core_unit_tests COMMAND core_unit_tests)
 target_link_libraries(core_unit_tests

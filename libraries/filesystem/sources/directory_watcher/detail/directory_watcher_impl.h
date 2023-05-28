@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// SPDX-License-Identifier: MIT
+
+#pragma once
 
 #if defined(P_LINUX)
 #  include "linux/directory_watcher_impl.h"

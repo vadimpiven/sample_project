@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// SPDX-License-Identifier: MIT
+
+#pragma once
 
 #include <core/error_handling/assertions.h>
 #include <core/logging/logger.h>

@@ -1,8 +1,10 @@
-﻿cmake_minimum_required(VERSION 3.21.0)
+﻿# SPDX-License-Identifier: MIT
+
+cmake_minimum_required(VERSION 3.21.0)
 
 project(sample-project
     VERSION 0.1.0
-    DESCRIPTION "Sample project"
+    DESCRIPTION "Sample Project"
 )
 set(CMAKE_CXX_STANDARD 20)
 

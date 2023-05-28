@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// SPDX-License-Identifier: MIT
+
+#pragma once
 
 #include <filesystem/directory_watcher/directory_watcher_factory.h>
 

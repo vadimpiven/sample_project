@@ -1,4 +1,6 @@
-﻿if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+﻿# SPDX-License-Identifier: MIT
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(PLATFORM "linux")
     add_compile_definitions(P_LINUX)
 endif()
