@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <core/error_handling/suppressions.h>
 #include <core/objects/non_copiable.h>
 
 #include <concepts>
@@ -89,7 +90,7 @@ public:
             [[likely]]
             try
             {
-                (void) std::invoke(m_release, m_value.value());
+                UNUSED(std::invoke(m_release, m_value.value()));
             }
             catch (...) {}
             m_value.reset();
