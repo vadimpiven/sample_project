@@ -4,7 +4,6 @@
 
 #include <filesystem/directory_watcher/directory_watcher.h>
 
-#include <core/error_handling/suppressions.h>
 #include <core/objects/releasable.h>
 
 #include <array>
@@ -58,7 +57,7 @@ public:
 
     ~DirectoryWatcherImpl() noexcept final
     {
-        UNUSED(::SetEvent(*m_event));
+        (void)::SetEvent(*m_event);
         if (m_thread.joinable())
         {
             m_thread.join();
