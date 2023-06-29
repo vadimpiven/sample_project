@@ -32,6 +32,8 @@ public:
 		m_flags = std::map<FSEventFilter, std::pair<FSEventStreamEventFlags, FSEventStreamEventFlags>>{
 			{FSEventFilter::FileAppendedAndClosed,
 		 		{kFSEventStreamEventFlagItemIsFile | kFSEventStreamEventFlagItemModified, kFSEventStreamEventFlagItemRemoved}},
+            {FSEventFilter::FileRenamed,
+                {kFSEventStreamEventFlagItemIsFile | kFSEventStreamEventFlagItemRenamed, kFSEventStreamEventFlagItemCreated}},
 		}.at(filter);
 
         const auto path = absoluteDirectoryPath.string();
@@ -102,7 +104,7 @@ private:
 		const ConstFSEventStreamRef /*streamRef*/,
 		void * const clientCallBackInfo,
 		const size_t numEvents,
-		void * /*eventPaths*/,
+		void * /*eventPaths*/, // (const char **)
 		const FSEventStreamEventFlags eventFlags[],
 		const FSEventStreamEventId /*eventIds*/[]
 	)

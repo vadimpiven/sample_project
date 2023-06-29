@@ -85,6 +85,11 @@ protected:
         return m_directory / std::move(name);
     }
 
+    [[nodiscard]] static std::filesystem::path MakeTmpFilename(const std::filesystem::path & filename)
+    {
+        return std::filesystem::path(filename).replace_extension(".tmp");
+    }
+
     [[nodiscard]] static std::string GetTestJson()
     {
         return R"({"test":"json"})";
@@ -99,6 +104,11 @@ protected:
     static void WaitFilesystemCacheFlush()
     {
         std::this_thread::sleep_for(std::chrono::seconds(10));
+    }
+
+    static void WaitFilesystemJournalPageFlip()
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(30));
     }
 
 private:
@@ -146,13 +156,12 @@ TEST_P(DirectoryWatcherTest, SetWatcher_CreateFile_WriteData_CloseFile)
     for (auto i = 0; i < n; ++i)
     {
 		WaitFilesystemEpochChange();
+        const auto filename = GetUniqueFilename(), tmp = filename.filename() += ".tmp";
         std::ofstream(GetUniqueFilename()) << GetTestJson();
     }
 
     WaitFilesystemCacheFlush();
 }
-
-INSTANTIATE_TEST_SUITE_P(Ladder, DirectoryWatcherTest, testing::Range(0, 10));
 
 TEST_F(DirectoryWatcherTest, CreateFile_SetWatcher_WriteData_CloseFile)
 {
@@ -206,6 +215,133 @@ TEST_F(DirectoryWatcherTest, CreateFile_WriteData_CloseFile_SetWatcher)
 
     WaitFilesystemCacheFlush();
 }
+
+TEST_F(DirectoryWatcherTest, CreateFileWatcher2)
+{
+    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    ASSERT_NE(nullptr, factory);
+    const auto watcher = factory->CreateDirectoryWatcher(
+        "filename", FSEventFilter::FileRenamed, GetCallbackWithCallExpectation(0));
+    ASSERT_EQ(nullptr, watcher);
+}
+
+TEST_F(DirectoryWatcherTest, CreateDirectoryWatcher2)
+{
+    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    ASSERT_NE(nullptr, factory);
+    const auto watcher = factory->CreateDirectoryWatcher(
+        GetDirectory(), FSEventFilter::FileRenamed, GetCallbackWithCallExpectation(0));
+    ASSERT_NE(nullptr, watcher);
+}
+
+TEST_P(DirectoryWatcherTest, SetWatcher_CreateFile_WriteData_CloseFile_Rename)
+{
+    const auto n = GetParam();
+
+    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    ASSERT_NE(nullptr, factory);
+    const auto watcher = factory->CreateDirectoryWatcher(
+        GetDirectory(), FSEventFilter::FileRenamed, GetCallbackWithCallExpectation(n));
+    ASSERT_NE(nullptr, watcher);
+
+    for (auto i = 0; i < n; ++i)
+    {
+        WaitFilesystemEpochChange();
+        const auto filename = GetUniqueFilename(), tmp = MakeTmpFilename(filename);
+        std::ofstream(tmp) << GetTestJson();
+        std::filesystem::rename(tmp, filename);
+    }
+
+    WaitFilesystemJournalPageFlip(); // very long wait for macOS, or else next test receives events from current
+}
+
+TEST_F(DirectoryWatcherTest, CreateFile_SetWatcher_WriteData_CloseFile_Rename)
+{
+    const auto filename = GetUniqueFilename(), tmp = MakeTmpFilename(filename);
+    std::ofstream file(tmp);
+
+    WaitFilesystemEpochChange();
+
+    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    ASSERT_NE(nullptr, factory);
+    const auto watcher = factory->CreateDirectoryWatcher(
+        GetDirectory(), FSEventFilter::FileRenamed, GetCallbackWithCallExpectation(1));
+    ASSERT_NE(nullptr, watcher);
+
+    file << GetTestJson();
+    file.close();
+
+    WaitFilesystemEpochChange();
+
+    std::filesystem::rename(tmp, filename);
+
+    WaitFilesystemCacheFlush();
+}
+
+TEST_F(DirectoryWatcherTest, CreateFile_WriteData_SetWatcher_CloseFile_Rename)
+{
+    const auto filename = GetUniqueFilename(), tmp = MakeTmpFilename(filename);
+    std::ofstream file(tmp);
+    file << GetTestJson();
+
+    WaitFilesystemEpochChange();
+
+    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    ASSERT_NE(nullptr, factory);
+    const auto watcher = factory->CreateDirectoryWatcher(
+        GetDirectory(), FSEventFilter::FileRenamed, GetCallbackWithCallExpectation(1));
+    ASSERT_NE(nullptr, watcher);
+
+    file.close();
+
+    WaitFilesystemEpochChange();
+
+    std::filesystem::rename(tmp, filename);
+
+    WaitFilesystemCacheFlush();
+}
+
+TEST_F(DirectoryWatcherTest, CreateFile_WriteData_CloseFile_SetWatcher_Rename)
+{
+    const auto filename = GetUniqueFilename(), tmp = MakeTmpFilename(filename);
+    std::ofstream(tmp) << GetTestJson();
+
+    WaitFilesystemEpochChange();
+
+    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    ASSERT_NE(nullptr, factory);
+    const auto watcher = factory->CreateDirectoryWatcher(
+        GetDirectory(), FSEventFilter::FileRenamed, GetCallbackWithCallExpectation(1));
+    ASSERT_NE(nullptr, watcher);
+
+    WaitFilesystemEpochChange();
+
+    std::filesystem::rename(tmp, filename);
+
+    WaitFilesystemCacheFlush();
+}
+
+TEST_F(DirectoryWatcherTest, CreateFile_WriteData_CloseFile_Rename_SetWatcher)
+{
+    const auto filename = GetUniqueFilename(), tmp = MakeTmpFilename(filename);
+    std::ofstream(tmp) << GetTestJson();
+
+    WaitFilesystemEpochChange();
+
+    std::filesystem::rename(tmp, filename);
+
+    WaitFilesystemEpochChange();
+
+    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    ASSERT_NE(nullptr, factory);
+    const auto watcher = factory->CreateDirectoryWatcher(
+        GetDirectory(), FSEventFilter::FileRenamed, GetCallbackWithCallExpectation(0));
+    ASSERT_NE(nullptr, watcher);
+
+    WaitFilesystemCacheFlush();
+}
+
+INSTANTIATE_TEST_SUITE_P(Ladder, DirectoryWatcherTest, testing::Range(0, 10));
 
 } // namespace
 } // namespace filesystem
