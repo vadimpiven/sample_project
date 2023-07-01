@@ -1,4 +1,4 @@
-﻿# SPDX-License-Identifier: MIT
+﻿# SPDX-License-Identifier: Apache-2.0 OR MIT
 
 add_library(filesystem STATIC)
 generate_export_header(filesystem)

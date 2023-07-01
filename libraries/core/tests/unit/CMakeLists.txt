@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 
 add_executable(core_unit_tests)
 add_test(NAME core_unit_tests COMMAND core_unit_tests)

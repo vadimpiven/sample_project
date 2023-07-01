@@ -1,4 +1,4 @@
-﻿// SPDX-License-Identifier: MIT
+﻿// SPDX-License-Identifier: Apache-2.0 OR MIT
 
 #include <filesystem/directory_watcher/directory_watcher_factory.h>
 
