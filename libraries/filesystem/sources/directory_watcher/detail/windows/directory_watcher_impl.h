@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <utility>
 
 #include <Windows.h>
 
@@ -29,28 +30,48 @@ public:
     )
         : m_callback(std::move(eventOccurredCallback))
     {
-        const auto filterValue = std::map<FSEventFilter, DWORD>{
-            {FSEventFilter::FileAppendedAndClosed, FILE_NOTIFY_CHANGE_LAST_WRITE},
+        m_flags = std::map<FSEventFilter, std::pair<DWORD, DWORD>>{
+            {FSEventFilter::FileAppendedAndClosed, {FILE_NOTIFY_CHANGE_LAST_WRITE, 0}},
+            {FSEventFilter::FileRenamed, {FILE_NOTIFY_CHANGE_FILE_NAME, FILE_ACTION_RENAMED_NEW_NAME}},
         }.at(filter);
         const auto path = LR"(\\?\)" + absoluteDirectoryPath.wstring() + LR"(\)";
 
-        m_event = core::Releasable(
+        m_directory = core::Releasable(
+            ::CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+                OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr),
+            INVALID_HANDLE_VALUE, &::CloseHandle);
+        if (!m_directory)
+        {
+            throw std::runtime_error(
+                "CreateFileW failed, system error code = " + std::to_string(::GetLastError()));
+        }
+
+        m_notifyEvent = core::Releasable(
+            ::CreateEventW(nullptr, false, false, nullptr), nullptr, &::CloseHandle);
+        if (!m_notifyEvent)
+        {
+            throw std::runtime_error(
+                    "CreateEventW failed, system error code = " + std::to_string(::GetLastError()));
+        }
+
+        m_overlapped = std::make_unique<OVERLAPPED>(OVERLAPPED{.hEvent = *m_notifyEvent});
+
+        m_stopEvent = core::Releasable(
             ::CreateEventW(nullptr, true, false, nullptr), nullptr, &::CloseHandle);
-        if (!m_event)
+        if (!m_stopEvent)
         {
             throw std::runtime_error(
                 "CreateEventW failed, system error code = " + std::to_string(::GetLastError()));
         }
 
-        m_handle = core::Releasable(
-            ::FindFirstChangeNotificationW(path.c_str(), false, filterValue),
-            INVALID_HANDLE_VALUE,
-            &::FindCloseChangeNotification
-        );
-        if (!m_handle)
+        // 32,767 is max path length (https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry), we will use smaller size
+        m_information.resize(sizeof(FILE_NOTIFY_INFORMATION) + path.size() + MAX_PATH);
+
+        if (!::ReadDirectoryChangesW(*m_directory, m_information.data(), static_cast<DWORD>(m_information.size()),
+             true, m_flags.first, nullptr, m_overlapped.get(), nullptr))
         {
             throw std::runtime_error(
-                "FindFirstChangeNotificationW failed, system error code = " + std::to_string(::GetLastError()));
+                "ReadDirectoryChangesW failed, system error code = " + std::to_string(::GetLastError()));
         }
 
         m_thread = std::thread(&DirectoryWatcherImpl::Loop, this);
@@ -58,19 +79,18 @@ public:
 
     ~DirectoryWatcherImpl() noexcept final
     {
-        UNUSED(::SetEvent(*m_event));
+        UNUSED(::CancelIoEx(*m_directory, m_overlapped.get()));
+        UNUSED(::SetEvent(*m_stopEvent));
         if (m_thread.joinable())
         {
             m_thread.join();
         }
-        m_handle.Release();
-        m_event.Release();
     }
 
 private:
-    void Loop() const noexcept
+    void Loop() noexcept
     {
-        const auto handles = std::array{*m_event, *m_handle};
+        const auto handles = std::array{*m_stopEvent, *m_notifyEvent};
         while (true)
         {
             const auto waitResult = ::WaitForMultipleObjects(
@@ -79,19 +99,49 @@ private:
             {
                 case WAIT_FAILED: continue;
                 case WAIT_OBJECT_0: return;
-                default: m_callback();
+                default: break;
             }
-            if (!::FindNextChangeNotification(*m_handle))
+
+            DWORD bytesTransferred{};
+            if (!::GetOverlappedResult(*m_directory, m_overlapped.get(), &bytesTransferred, false))
+            {
+                return;
+            }
+            if (bytesTransferred)
+            {
+                Process();
+            }
+            if (!::ReadDirectoryChangesW(*m_directory, m_information.data(), static_cast<DWORD>(m_information.size()),
+                 true, m_flags.first, nullptr, m_overlapped.get(), nullptr))
             {
                 return;
             }
         }
     }
 
+    void Process() const noexcept
+    {
+        DWORD offset{};
+        auto data = reinterpret_cast<uintptr_t>(m_information.data());
+        do
+        {
+            data += offset;
+            auto info = reinterpret_cast<const FILE_NOTIFY_INFORMATION * const>(data);
+            if ((info->Action & m_flags.second) == m_flags.second)
+            {
+                m_callback();
+            }
+            offset = info->NextEntryOffset;
+        }
+        while (offset != 0);
+    }
+
 private:
     const std::function<void()> m_callback;
-    core::Releasable<HANDLE, decltype(&::CloseHandle)> m_event;
-    core::Releasable<HANDLE, decltype(&::FindCloseChangeNotification)> m_handle;
+    std::pair<DWORD, DWORD> m_flags;
+    std::unique_ptr<OVERLAPPED> m_overlapped;
+    std::vector<DWORD> m_information;
+    core::Releasable<HANDLE, decltype(&::CloseHandle)> m_directory, m_notifyEvent, m_stopEvent;
     std::thread m_thread;
 };
 

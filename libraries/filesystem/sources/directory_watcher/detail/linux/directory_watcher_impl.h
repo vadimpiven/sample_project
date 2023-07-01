@@ -31,6 +31,7 @@ public:
     {
         const auto filterValue = std::map<FSEventFilter, uint32_t>{
 			{FSEventFilter::FileAppendedAndClosed, IN_CLOSE_WRITE | IN_DONT_FOLLOW | IN_EXCL_UNLINK | IN_ONLYDIR},
+            {FSEventFilter::FileRenamed, IN_MOVED_TO | IN_DONT_FOLLOW | IN_EXCL_UNLINK | IN_ONLYDIR},
         }.at(filter);
         const auto path = absoluteDirectoryPath.string();
 
