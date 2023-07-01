@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 
 add_executable(filesystem_memory_tests)
 add_asan_test(NAME filesystem_memory_tests COMMAND filesystem_memory_tests)
