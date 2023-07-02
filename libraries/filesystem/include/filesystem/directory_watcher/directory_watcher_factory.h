@@ -5,7 +5,6 @@
 #include <filesystem/directory_watcher/directory_watcher.h>
 
 #include <core/objects/object.h>
-#include <core/logging/logger.h>
 
 #include <filesystem>
 #include <functional>
@@ -30,8 +29,6 @@ struct FILESYSTEM_EXPORT IDirectoryWatcherFactory : core::IObject
     ) noexcept = 0;
 };
 
-[[nodiscard]] std::shared_ptr<IDirectoryWatcherFactory> FILESYSTEM_EXPORT CreateDirectoryWatcherFactory(
-    std::shared_ptr<core::ILogger> logger
-) noexcept;
+[[nodiscard]] std::shared_ptr<IDirectoryWatcherFactory> FILESYSTEM_EXPORT CreateDirectoryWatcherFactory() noexcept;
 
 } // namespace filesystem

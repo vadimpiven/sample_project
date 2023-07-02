@@ -1,15 +1,7 @@
 ﻿# SPDX-License-Identifier: Apache-2.0 OR MIT
 
-add_library(core STATIC)
-generate_export_header(core)
+add_library(core INTERFACE)
 target_include_directories(core
-PUBLIC
+INTERFACE
     "${CMAKE_CURRENT_LIST_DIR}/include"
-    "${CMAKE_CURRENT_BINARY_DIR}"
 )
-target_sources(core
-PRIVATE
-    "${CMAKE_CURRENT_LIST_DIR}/sources/logging/logger_impl.cpp"
-)
-
-add_subdirectory(tests)

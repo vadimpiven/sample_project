@@ -2,14 +2,12 @@
 
 #pragma once
 
-#include <core_export.h>
-
 namespace core {
 
-struct CORE_EXPORT NonCopiable
+struct NonCopiable
 {
-    NonCopiable(const NonCopiable &) = delete;
-    NonCopiable & operator=(const NonCopiable &) = delete;
+    NonCopiable(const NonCopiable & /*object*/) = delete;
+    NonCopiable & operator=(const NonCopiable & /*object*/) = delete;
 
 protected:
     NonCopiable() = default;

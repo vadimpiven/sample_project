@@ -2,6 +2,7 @@
   "name": "sample-project",
   "version-semver": "0.1.0",
   "dependencies": [
-    "gtest"
+    "gtest",
+    "spdlog"
   ]
 }
