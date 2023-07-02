@@ -2,8 +2,6 @@
 
 #include <filesystem/directory_watcher/directory_watcher_factory.h>
 
-#include <core/logging/doubles/logger_double.h>
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -20,7 +18,6 @@ namespace filesystem::testing {
 namespace {
 
 using namespace ::testing;
-using namespace core::testing;
 
 class DirectoryWatcherTest : public TestWithParam<int>
 {
@@ -33,7 +30,6 @@ public:
 protected:
     explicit DirectoryWatcherTest()
         : m_directory(std::filesystem::temp_directory_path() / u8"🐶{5941849b-3001-4467-8a02-b8e03ebf306f}")
-        , m_logger(std::make_shared<LoggerDouble>())
     {
         std::filesystem::remove_all(m_directory);
         std::filesystem::create_directory(m_directory);
@@ -54,12 +50,6 @@ protected:
         std::cout << "warning: DirectoryWatcherTest test suit is tedious, "
                      "you could disable it by defining SKIP_TEDIOUS_TESTS" << std::endl;
 #endif
-    }
-
-protected:
-    [[nodiscard]] std::shared_ptr<core::ILogger> GetLogger() const
-    {
-        return m_logger;
     }
 
 protected:
@@ -114,20 +104,17 @@ protected:
 private:
     const std::filesystem::path m_directory;
     unsigned m_serial{};
-
-private:
-    const std::shared_ptr<LoggerDouble> m_logger;
 };
 
 TEST_F(DirectoryWatcherTest, CreateWatcherFactory)
 {
-    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    const auto factory = CreateDirectoryWatcherFactory();
     ASSERT_NE(nullptr, factory);
 }
 
 TEST_F(DirectoryWatcherTest, CreateFileWatcher)
 {
-    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    const auto factory = CreateDirectoryWatcherFactory();
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
         "filename", FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(0));
@@ -136,7 +123,7 @@ TEST_F(DirectoryWatcherTest, CreateFileWatcher)
 
 TEST_F(DirectoryWatcherTest, CreateDirectoryWatcher)
 {
-    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    const auto factory = CreateDirectoryWatcherFactory();
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
         GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(0));
@@ -147,7 +134,7 @@ TEST_P(DirectoryWatcherTest, SetWatcher_CreateFile_WriteData_CloseFile)
 {
     const auto n = GetParam();
 
-    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    const auto factory = CreateDirectoryWatcherFactory();
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
         GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(n));
@@ -169,7 +156,7 @@ TEST_F(DirectoryWatcherTest, CreateFile_SetWatcher_WriteData_CloseFile)
 
 	WaitFilesystemEpochChange();
 
-    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    const auto factory = CreateDirectoryWatcherFactory();
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
         GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(1));
@@ -188,7 +175,7 @@ TEST_F(DirectoryWatcherTest, CreateFile_WriteData_SetWatcher_CloseFile)
 
 	WaitFilesystemEpochChange();
 
-    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    const auto factory = CreateDirectoryWatcherFactory();
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
         GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(1));
@@ -207,7 +194,7 @@ TEST_F(DirectoryWatcherTest, CreateFile_WriteData_CloseFile_SetWatcher)
 
 	WaitFilesystemEpochChange();
 
-    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    const auto factory = CreateDirectoryWatcherFactory();
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
         GetDirectory(), FSEventFilter::FileAppendedAndClosed, GetCallbackWithCallExpectation(0));
@@ -218,7 +205,7 @@ TEST_F(DirectoryWatcherTest, CreateFile_WriteData_CloseFile_SetWatcher)
 
 TEST_F(DirectoryWatcherTest, CreateFileWatcher2)
 {
-    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    const auto factory = CreateDirectoryWatcherFactory();
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
         "filename", FSEventFilter::FileRenamed, GetCallbackWithCallExpectation(0));
@@ -227,7 +214,7 @@ TEST_F(DirectoryWatcherTest, CreateFileWatcher2)
 
 TEST_F(DirectoryWatcherTest, CreateDirectoryWatcher2)
 {
-    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    const auto factory = CreateDirectoryWatcherFactory();
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
         GetDirectory(), FSEventFilter::FileRenamed, GetCallbackWithCallExpectation(0));
@@ -238,7 +225,7 @@ TEST_P(DirectoryWatcherTest, SetWatcher_CreateFile_WriteData_CloseFile_Rename)
 {
     const auto n = GetParam();
 
-    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    const auto factory = CreateDirectoryWatcherFactory();
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
         GetDirectory(), FSEventFilter::FileRenamed, GetCallbackWithCallExpectation(n));
@@ -262,7 +249,7 @@ TEST_F(DirectoryWatcherTest, CreateFile_SetWatcher_WriteData_CloseFile_Rename)
 
     WaitFilesystemEpochChange();
 
-    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    const auto factory = CreateDirectoryWatcherFactory();
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
         GetDirectory(), FSEventFilter::FileRenamed, GetCallbackWithCallExpectation(1));
@@ -286,7 +273,7 @@ TEST_F(DirectoryWatcherTest, CreateFile_WriteData_SetWatcher_CloseFile_Rename)
 
     WaitFilesystemEpochChange();
 
-    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    const auto factory = CreateDirectoryWatcherFactory();
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
         GetDirectory(), FSEventFilter::FileRenamed, GetCallbackWithCallExpectation(1));
@@ -308,7 +295,7 @@ TEST_F(DirectoryWatcherTest, CreateFile_WriteData_CloseFile_SetWatcher_Rename)
 
     WaitFilesystemEpochChange();
 
-    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    const auto factory = CreateDirectoryWatcherFactory();
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
         GetDirectory(), FSEventFilter::FileRenamed, GetCallbackWithCallExpectation(1));
@@ -332,7 +319,7 @@ TEST_F(DirectoryWatcherTest, CreateFile_WriteData_CloseFile_Rename_SetWatcher)
 
     WaitFilesystemEpochChange();
 
-    const auto factory = CreateDirectoryWatcherFactory(GetLogger());
+    const auto factory = CreateDirectoryWatcherFactory();
     ASSERT_NE(nullptr, factory);
     const auto watcher = factory->CreateDirectoryWatcher(
         GetDirectory(), FSEventFilter::FileRenamed, GetCallbackWithCallExpectation(0));

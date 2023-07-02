@@ -2,13 +2,15 @@
 
 add_library(filesystem STATIC)
 generate_export_header(filesystem)
-target_include_directories(core
+target_include_directories(filesystem
 PUBLIC
     "${CMAKE_CURRENT_LIST_DIR}/include"
     "${CMAKE_CURRENT_BINARY_DIR}"
 )
 target_link_libraries(filesystem
 PRIVATE
+    spdlog::spdlog_header_only
+PUBLIC
     core
 )
 target_sources(filesystem

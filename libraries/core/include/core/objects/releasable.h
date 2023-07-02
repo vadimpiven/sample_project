@@ -11,8 +11,6 @@
 #include <type_traits>
 #include <utility>
 
-#include <core_export.h>
-
 namespace core {
 
 /// Use std::unique_ptr with custom deleter instead whenever possible
@@ -21,7 +19,7 @@ template <typename Type, typename Releaser = std::function<void(Type)>>
     requires std::destructible<Type>
           && std::is_nothrow_move_constructible_v<Type>
           && std::invocable<Releaser, Type>
-class CORE_EXPORT Releasable : public NonCopiable
+class Releasable : public NonCopiable
 {
 public:
     constexpr Releasable() = default;

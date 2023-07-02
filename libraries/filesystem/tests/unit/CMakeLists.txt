@@ -6,7 +6,6 @@ target_link_libraries(filesystem_unit_tests
 PRIVATE
     GTest::gmock_main
 PRIVATE
-    core
     filesystem
 )
 target_sources(filesystem_unit_tests

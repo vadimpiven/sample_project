@@ -1,5 +1,6 @@
 ﻿# SPDX-License-Identifier: Apache-2.0 OR MIT
 
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 macro(enable_strict_compiler_checks)

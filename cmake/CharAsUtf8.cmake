@@ -1,0 +1,7 @@
+macro(use_char_instead_of_char_8t)
+    if(MSVC)
+        add_compile_options(/Zc:char8_t-)
+    else()
+        add_compile_options(-fno-char8_t)
+    endif()
+endmacro()

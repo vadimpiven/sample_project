@@ -18,7 +18,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 include(ExportHeader)
 include(PlatformDefinition)
 include(StrictCompilerChecks)
+include(CharAsUtf8)
 
 find_package(GTest CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
 add_subdirectory(libraries)
