@@ -143,7 +143,6 @@ TEST_P(DirectoryWatcherTest, SetWatcher_CreateFile_WriteData_CloseFile)
     for (auto i = 0; i < n; ++i)
     {
 		WaitFilesystemEpochChange();
-        const auto filename = GetUniqueFilename(), tmp = filename.filename() += ".tmp";
         std::ofstream(GetUniqueFilename()) << GetTestJson();
     }
 

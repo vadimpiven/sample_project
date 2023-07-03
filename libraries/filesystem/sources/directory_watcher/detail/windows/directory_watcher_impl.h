@@ -51,7 +51,7 @@ public:
         if (!m_notifyEvent)
         {
             throw std::runtime_error(
-                    "CreateEventW failed, system error code = " + std::to_string(::GetLastError()));
+                "CreateEventW failed, system error code = " + std::to_string(::GetLastError()));
         }
 
         m_overlapped = std::make_unique<OVERLAPPED>(OVERLAPPED{.hEvent = *m_notifyEvent});
