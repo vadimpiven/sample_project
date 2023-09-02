@@ -6,6 +6,8 @@
 
 #include <core/objects/releasable.h>
 
+#include <spdlog/spdlog.h>
+
 #include <cerrno>
 #include <map>
 #include <stdexcept>
@@ -68,7 +70,7 @@ private:
     void Loop() const noexcept
     {
         std::array<uint8_t, sizeof(struct inotify_event) + NAME_MAX + 1> buffer{};
-        while (true)
+        while (true) try
         {
             auto bytesRead = ::read(*m_handle, buffer.data(), buffer.size());
             if (bytesRead == -1)
@@ -85,6 +87,10 @@ private:
                     return;
                 }
             }
+        }
+        catch (const std::exception & err)
+        {
+            SPDLOG_ERROR("DirectoryWatcherImpl callback failed, error: {}", err.what());
         }
     }
 

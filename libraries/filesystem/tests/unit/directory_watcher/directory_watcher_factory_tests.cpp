@@ -31,6 +31,9 @@ protected:
     explicit DirectoryWatcherTest()
         : m_directory(std::filesystem::temp_directory_path() / u8"🐶{5941849b-3001-4467-8a02-b8e03ebf306f}")
     {
+        static unsigned serial{};
+        m_directory.replace_filename(m_directory.filename().string() + std::to_string(++serial));
+
         std::filesystem::remove_all(m_directory);
         std::filesystem::create_directory(m_directory);
         std::filesystem::permissions(m_directory, std::filesystem::perms::owner_all);
@@ -93,16 +96,16 @@ protected:
 
     static void WaitFilesystemCacheFlush()
     {
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
     static void WaitFilesystemJournalPageFlip()
     {
-        std::this_thread::sleep_for(std::chrono::seconds(30));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
 private:
-    const std::filesystem::path m_directory;
+    std::filesystem::path m_directory;
     unsigned m_serial{};
 };
 

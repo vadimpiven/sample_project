@@ -6,6 +6,8 @@
 
 #include <core/objects/releasable.h>
 
+#include <spdlog/spdlog.h>
+
 #include <array>
 #include <map>
 #include <mutex>
@@ -109,16 +111,21 @@ private:
 		const FSEventStreamEventId /*eventIds*/[]
 	)
 	{
-		auto self = reinterpret_cast<DirectoryWatcherImpl * const>(clientCallBackInfo);
-		std::scoped_lock lock{self->m_guard};
-		const auto [flagsSet, flagsUnset] = self->m_flags;
-		for (size_t i = 0; i < numEvents; ++i)
-		{
-			if ((eventFlags[i] & flagsSet) == flagsSet && (eventFlags[i] & flagsUnset) == 0)
-			{
-				self->m_callback();
-			}
-		}
+        auto self = reinterpret_cast<DirectoryWatcherImpl * const>(clientCallBackInfo);
+        try
+        {
+            std::scoped_lock lock{self->m_guard};
+            const auto [flagsSet, flagsUnset] = self->m_flags;
+            for (size_t i = 0; i < numEvents; ++i) {
+                if ((eventFlags[i] & flagsSet) == flagsSet && (eventFlags[i] & flagsUnset) == 0) {
+                    self->m_callback();
+                }
+            }
+        }
+        catch (const std::exception & err)
+        {
+            SPDLOG_ERROR("DirectoryWatcherImpl callback failed, error: {}", err.what());
+        }
 	}
 
 private:
