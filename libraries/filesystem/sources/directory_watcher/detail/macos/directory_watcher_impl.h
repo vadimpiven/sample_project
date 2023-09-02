@@ -123,7 +123,7 @@ private:
 
 private:
     const std::function<void()> m_callback;
-	std::pair<FSEventStreamEventFlags, FSEventStreamEventFlags> m_flags;
+	std::pair<FSEventStreamEventFlags, FSEventStreamEventFlags> m_flags{};
     core::Releasable<dispatch_queue_t, decltype(&::dispatch_release)> m_thread;
     std::mutex m_guard;
     core::Releasable<FSEventStreamRef> m_handle;
