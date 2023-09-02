@@ -7,6 +7,8 @@
 #include <core/error_handling/suppressions.h>
 #include <core/objects/releasable.h>
 
+#include <spdlog/spdlog.h>
+
 #include <array>
 #include <map>
 #include <stdexcept>
@@ -91,7 +93,7 @@ private:
     void Loop() noexcept
     {
         const auto handles = std::array{*m_stopEvent, *m_notifyEvent};
-        while (true)
+        while (true) try
         {
             const auto waitResult = ::WaitForMultipleObjects(
                 static_cast<DWORD>(handles.size()), handles.data(), false, INFINITE);
@@ -116,6 +118,10 @@ private:
             {
                 return;
             }
+        }
+        catch (const std::exception & err)
+        {
+            SPDLOG_ERROR("DirectoryWatcherImpl callback failed, error: {}", err.what());
         }
     }
 
