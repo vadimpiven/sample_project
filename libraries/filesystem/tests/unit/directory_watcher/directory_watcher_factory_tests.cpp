@@ -96,12 +96,12 @@ protected:
 
     static void WaitFilesystemCacheFlush()
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(150));
     }
 
     static void WaitFilesystemJournalPageFlip()
     {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     }
 
 private:
