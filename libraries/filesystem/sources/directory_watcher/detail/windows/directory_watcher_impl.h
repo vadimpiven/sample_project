@@ -138,7 +138,7 @@ private:
 
 private:
     const std::function<void()> m_callback;
-    std::pair<DWORD, DWORD> m_flags;
+    std::pair<DWORD, DWORD> m_flags{};
     std::unique_ptr<OVERLAPPED> m_overlapped;
     std::vector<DWORD> m_information;
     core::Releasable<HANDLE, decltype(&::CloseHandle)> m_directory, m_notifyEvent, m_stopEvent;

@@ -17,16 +17,17 @@ namespace core {
 /// Warning: any exception thrown by Releaser would be consumed
 template <typename Type, typename Releaser = std::function<void(Type)>>
     requires std::destructible<Type>
+          && std::is_nothrow_move_assignable_v<Type>
           && std::is_nothrow_move_constructible_v<Type>
           && std::invocable<Releaser, Type>
 class Releasable : public NonCopiable
 {
 public:
-    constexpr Releasable() = default;
+    constexpr Releasable() noexcept = default;
 
     template <typename Invalid = Type>
         requires std::equality_comparable_with<Type, Invalid>
-    Releasable(Type && value, Invalid && invalid, Releaser && release)
+    [[nodiscard]] constexpr Releasable(Type && value, Invalid && invalid, Releaser && release)
         : m_value(std::nullopt)
         , m_release(std::move(release))
     {
@@ -37,26 +38,30 @@ public:
         }
     }
 
-    constexpr Releasable(Releasable && other) noexcept
+    [[nodiscard]] constexpr Releasable(Releasable && other) noexcept
         : m_value(std::move(other.m_value))
         , m_release(std::move(other.m_release))
     {}
 
+    constexpr void Swap(Releasable & other) noexcept
+    {
+        if (this != &other)
+        {
+            [[likely]]
+            std::swap(m_value, other.m_value);
+            std::swap(m_release, other.m_release);
+        }
+    }
+
     constexpr Releasable & operator=(Releasable && other) noexcept
     {
-        if (this == &other)
-        {
-            [[unlikely]]
-            return *this;
-        }
-
-        std::swap(m_value, other.m_value);
-        std::swap(m_release, other.m_release);
+        Swap(other);
         return *this;
     }
 
     template<typename OtherType, typename OtherReleaser>
         requires std::destructible<OtherType>
+                 && std::is_nothrow_move_assignable_v<OtherType>
                  && std::is_nothrow_move_constructible_v<OtherType>
                  && std::invocable<OtherReleaser, OtherType>
     friend class Releasable;
@@ -64,38 +69,59 @@ public:
     template<typename SameType = Type, typename SameReleaser = Releaser, typename OtherReleaser>
         requires std::same_as<SameReleaser, std::function<void(SameType)>>
               && std::is_constructible_v<std::function<void(SameType)>, OtherReleaser>
-    Releasable & operator=(Releasable<SameType, OtherReleaser> && other)
+    constexpr Releasable & operator=(Releasable<SameType, OtherReleaser> && other) noexcept
     {
-        std::swap(m_value, other.m_value);
-        m_release = std::function<void(Type)>(other.m_release);
+        Release();
+        m_value.swap(other.m_value);
+        m_release = std::function<void(Type)>(std::move(other.m_release));
         return *this;
     }
 
-    [[nodiscard]] constexpr bool operator !() const noexcept
+    [[nodiscard]] constexpr explicit operator bool() const noexcept
     {
-        return !m_value.has_value();
+        return m_value.operator bool();
     }
 
-    [[nodiscard]] Type operator *() const
+    [[nodiscard]] constexpr bool HasValue() const noexcept
+    {
+        return m_value.has_value();
+    }
+
+    [[nodiscard]] constexpr const Type & Value() const & noexcept
     {
         return m_value.value();
     }
 
-    void Release() noexcept
+    [[nodiscard]] constexpr Type * operator->() noexcept
     {
-        if (m_value.has_value())
+        return m_value.operator->();
+    }
+
+    [[nodiscard]] constexpr const Type * operator->() const noexcept
+    {
+        return m_value.operator->();
+    }
+
+    [[nodiscard]] constexpr const Type & operator *() const & noexcept
+    {
+        return *m_value;
+    }
+
+    constexpr void Release() noexcept
+    {
+        if (m_value)
         {
             [[likely]]
             try
             {
-                UNUSED(std::invoke(m_release, m_value.value()));
+                UNUSED(std::invoke(m_release, *std::move(m_value)));
             }
             catch (...) {}
             m_value.reset();
         }
     }
 
-    ~Releasable() noexcept
+    constexpr ~Releasable() noexcept
     {
         Release();
     }
