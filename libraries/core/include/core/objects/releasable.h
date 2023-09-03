@@ -5,7 +5,10 @@
 #include <core/error_handling/suppressions.h>
 #include <core/objects/non_copiable.h>
 
+#include <spdlog/spdlog.h>
+
 #include <concepts>
+#include <exception>
 #include <functional>
 #include <optional>
 #include <type_traits>
@@ -116,7 +119,10 @@ public:
             {
                 UNUSED(std::invoke(m_release, *std::move(m_value)));
             }
-            catch (...) {}
+            catch (const std::exception & err)
+            {
+                SPDLOG_ERROR("Releasable release failed, error: {}", err.what());
+            }
             m_value.reset();
         }
     }
