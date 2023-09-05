@@ -16,13 +16,21 @@
 
 namespace core {
 
+template <typename Type>
+concept TypeConcept
+    =  std::is_nothrow_move_constructible_v<Type>
+    && std::is_nothrow_move_assignable_v<Type>
+    && std::destructible<Type>;
+
+template <typename Releaser, typename Type>
+concept ReleaserConcept
+    =  TypeConcept<Type>
+    && std::is_nothrow_move_constructible_v<Releaser>
+    && std::invocable<Releaser, Type>;
+
 /// Use std::unique_ptr with custom deleter instead whenever possible
 /// Warning: any exception thrown by Releaser would be consumed
-template <typename Type, typename Releaser = std::function<void(Type)>>
-    requires std::destructible<Type>
-          && std::is_nothrow_move_assignable_v<Type>
-          && std::is_nothrow_move_constructible_v<Type>
-          && std::invocable<Releaser, Type>
+template <TypeConcept Type, ReleaserConcept<Type> Releaser = std::function<void(Type)>>
 class Releasable : public NonCopiable
 {
 public:
@@ -44,7 +52,9 @@ public:
     [[nodiscard]] constexpr Releasable(Releasable && other) noexcept
         : m_value(std::move(other.m_value))
         , m_release(std::move(other.m_release))
-    {}
+    {
+        other.m_value.reset();
+    }
 
     constexpr void Swap(Releasable & other) noexcept
     {
@@ -62,11 +72,7 @@ public:
         return *this;
     }
 
-    template<typename OtherType, typename OtherReleaser>
-        requires std::destructible<OtherType>
-                 && std::is_nothrow_move_assignable_v<OtherType>
-                 && std::is_nothrow_move_constructible_v<OtherType>
-                 && std::invocable<OtherReleaser, OtherType>
+    template<TypeConcept OtherType, ReleaserConcept<OtherType> OtherReleaser>
     friend class Releasable;
 
     template<typename SameType = Type, typename SameReleaser = Releaser, typename OtherReleaser>
@@ -82,7 +88,7 @@ public:
 
     [[nodiscard]] constexpr explicit operator bool() const noexcept
     {
-        return m_value.operator bool();
+        return m_value.has_value();
     }
 
     [[nodiscard]] constexpr bool HasValue() const noexcept
@@ -90,7 +96,7 @@ public:
         return m_value.has_value();
     }
 
-    [[nodiscard]] constexpr const Type & Value() const & noexcept
+    [[nodiscard]] constexpr const Type & Value() const &
     {
         return m_value.value();
     }
@@ -112,7 +118,7 @@ public:
 
     constexpr void Release() noexcept
     {
-        if (m_value)
+        if (m_value.has_value())
         {
             [[likely]]
             try

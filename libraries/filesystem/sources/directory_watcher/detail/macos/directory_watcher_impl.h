@@ -96,8 +96,9 @@ public:
 
     ~DirectoryWatcherImpl() noexcept final
     {
+        ::FSEventStreamStop(*m_handle);
+        ::FSEventStreamInvalidate(*m_handle);
         m_handle.Release();
-		std::scoped_lock lock{m_guard};
         m_thread.Release();
     }
 
@@ -111,10 +112,9 @@ private:
 		const FSEventStreamEventId /*eventIds*/[]
 	)
 	{
-        auto self = reinterpret_cast<DirectoryWatcherImpl * const>(clientCallBackInfo);
         try
         {
-            std::scoped_lock lock{self->m_guard};
+            auto self = reinterpret_cast<const DirectoryWatcherImpl * const>(clientCallBackInfo);
             const auto [flagsSet, flagsUnset] = self->m_flags;
             for (size_t i = 0; i < numEvents; ++i) {
                 if ((eventFlags[i] & flagsSet) == flagsSet && (eventFlags[i] & flagsUnset) == 0) {
@@ -132,7 +132,6 @@ private:
     const std::function<void()> m_callback;
 	std::pair<FSEventStreamEventFlags, FSEventStreamEventFlags> m_flags{};
     core::Releasable<dispatch_queue_t, decltype(&::dispatch_release)> m_thread;
-    std::mutex m_guard;
     core::Releasable<FSEventStreamRef> m_handle;
 };
 
