@@ -52,7 +52,7 @@ protected:
 #ifdef SKIP_TEDIOUS_TESTS
         GTEST_SKIP() << "DirectoryWatcherTest skipped, remove SKIP_TEDIOUS_TESTS define to enable them";
 #else
-        std::cout << "warning: DirectoryWatcherTest test suit is tedious, "
+        std::clog << "warning: DirectoryWatcherTest test suit is tedious, "
                      "you could disable it by defining SKIP_TEDIOUS_TESTS" << std::endl;
 #endif
     }
