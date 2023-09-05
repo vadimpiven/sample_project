@@ -4,6 +4,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <spdlog/spdlog.h>
 
 #include <chrono>
 #include <clocale>
@@ -25,6 +26,7 @@ public:
     [[maybe_unused]] static void SetUpTestSuite()
     {
         std::setlocale(LC_CTYPE, "en_US.utf8"); // for u8 string below
+        spdlog::set_level(spdlog::level::off); // comment out to enable logging
     }
 
 protected:
@@ -97,11 +99,6 @@ protected:
     static void WaitFilesystemCacheFlush()
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(150));
-    }
-
-    static void WaitFilesystemJournalPageFlip()
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     }
 
 private:
@@ -241,7 +238,7 @@ TEST_P(DirectoryWatcherTest, SetWatcher_CreateFile_WriteData_CloseFile_Rename)
         std::filesystem::rename(tmp, filename);
     }
 
-    WaitFilesystemJournalPageFlip(); // very long wait for macOS, or else next test receives events from current
+    WaitFilesystemCacheFlush();
 }
 
 TEST_F(DirectoryWatcherTest, CreateFile_SetWatcher_WriteData_CloseFile_Rename)
