@@ -78,7 +78,7 @@ public:
     template<typename SameType = Type, typename SameReleaser = Releaser, typename OtherReleaser>
         requires std::same_as<SameReleaser, std::function<void(SameType)>>
               && std::is_constructible_v<std::function<void(SameType)>, OtherReleaser>
-    constexpr Releasable & operator=(Releasable<SameType, OtherReleaser> && other) noexcept
+    constexpr Releasable & operator=(Releasable<SameType, OtherReleaser> && other)
     {
         Release();
         m_value.swap(other.m_value);
