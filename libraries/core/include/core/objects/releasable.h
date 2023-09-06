@@ -17,22 +17,25 @@
 namespace core {
 
 template <typename Type>
-concept TypeConcept
+concept ReleasableTypeConcept
     =  std::is_nothrow_move_constructible_v<Type>
     && std::is_nothrow_move_assignable_v<Type>
     && std::destructible<Type>;
 
 template <typename Releaser, typename Type>
 concept ReleaserConcept
-    =  TypeConcept<Type>
+    =  ReleasableTypeConcept<Type>
     && std::is_nothrow_move_constructible_v<Releaser>
     && std::invocable<Releaser, Type>;
 
 /// Use std::unique_ptr with custom deleter instead whenever possible
 /// Warning: any exception thrown by Releaser would be consumed
-template <TypeConcept Type, ReleaserConcept<Type> Releaser = std::function<void(Type)>>
+template <ReleasableTypeConcept Type, ReleaserConcept<Type> Releaser = std::function<void(Type)>>
 class Releasable : public NonCopiable
 {
+    template<ReleasableTypeConcept OtherType, ReleaserConcept<OtherType> OtherReleaser>
+    friend class Releasable;
+
 public:
     constexpr Releasable() noexcept = default;
 
@@ -71,9 +74,6 @@ public:
         Swap(other);
         return *this;
     }
-
-    template<TypeConcept OtherType, ReleaserConcept<OtherType> OtherReleaser>
-    friend class Releasable;
 
     template<typename SameType = Type, typename SameReleaser = Releaser, typename OtherReleaser>
         requires std::same_as<SameReleaser, std::function<void(SameType)>>
