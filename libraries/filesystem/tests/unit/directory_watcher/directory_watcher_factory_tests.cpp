@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -50,9 +51,10 @@ protected:
     void SetUp() override
     {
 #ifdef SKIP_TEDIOUS_TESTS
-        GTEST_SKIP() << "DirectoryWatcherTest skipped, remove SKIP_TEDIOUS_TESTS define to enable them";
+        GTEST_SKIP() << "DirectoryWatcher test skipped as tedious, "
+                     << "remove SKIP_TEDIOUS_TESTS define to enable it";
 #else
-        std::clog << "warning: DirectoryWatcherTest test suit is tedious, "
+        std::clog << "warning: DirectoryWatcher test is tedious, "
                      "you could disable it by defining SKIP_TEDIOUS_TESTS" << std::endl;
 #endif
     }
